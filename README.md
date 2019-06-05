@@ -91,3 +91,4 @@ In robotics, this architecture can play the role of a meta-network coordinating 
 Also, this architecture allows you to use transfer learning to pre-train the CNN part, and vice versa at the beginning to train the RL part of the neural network, and then train the CNN part on the already trained RL network on model data. In the example in the programming of the game tetris transfer learning was applied with training at the beginning of the CNN part and FC part to the action mask layer (that is transferred to the resulting network). In the task of parking, I will also plan to apply the CNN training of the part after the training of the RL part (ie, the “cherry” first).
 
 
+P.S. (Looking for a job)
