@@ -244,7 +244,7 @@ def main():
         game_db.save(GAME_STATES_PATH)
 
     async_funcs = {
-        #AsyncFunc.create_from_class(agent_cls=BotGame()) : Request(RequestType.NOP),
+        AsyncFunc.create_from_class(agent_cls=BotGame()) : Request(RequestType.NOP),
         AsyncFunc.create_from_class(agent_cls=BotGame(ui_mode=True)) : Request(RequestType.NOP),
         AsyncFunc.create_from_class(agent_cls=DBAsync(db=game_db)) : Request(RequestType.NOP),
         # AsyncFunc.create_from_class(agent_cls=AsyncCNNTrainDataCreater(db=game_db)) : Request(RequestType.NOP),
