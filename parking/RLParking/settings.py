@@ -161,7 +161,7 @@ class PathesFunc:
 
 class Pathes:
     def __init__(self, version):
-        base_path = "/home/klizardin/tmp/parking/{0}/".format(version)
+        base_path = "/tmp/parking/{0}/".format(version)
         self._pathes = {
             "tmp": base_path,
             "base_coordinates": os.path.join(base_path, "base_coordinates/") + "coords",
