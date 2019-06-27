@@ -20,7 +20,7 @@ class AsyncNet:
 
     def _init_model(self):
         self._model = RLModel()
-        self._model.compile(optimizer=tf.train.MomentumOptimizer(learning_rate=1e-3, momentum=0.9)
+        self._model.compile(optimizer=tf.train.MomentumOptimizer(learning_rate=1e-2, momentum=0.9)
             , loss = 'mse'
             , metrics = ['mse']
             )
@@ -54,7 +54,9 @@ class AsyncNet:
         return self._model.fit(
             ntd.x, ntd.y,
             epochs=1, batch_size=batch_size, verbose=0,
-            callbacks = callbacks if callbacks else None
+            callbacks = callbacks if callbacks else None,
+            use_multiprocessing=True,
+            workers=2,
             )
 
     @staticmethod

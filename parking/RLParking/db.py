@@ -199,14 +199,16 @@ class TrainStates:
 
     def save(self, fn: AnyStr):
         with open(fn, "wb") as f:
-            data = get_reinforce_params(), self._states
+            rp = TARGET.get_reinforce_params()
+            print("db save reinforce params = {}".format(rp))
+            data = rp, self._states
             pickle.dump(data, f)
 
     def _load(self, fn: AnyStr):
         self._states = list()
         with open(fn, "rb") as f:
             reinforce_params, self._states = pickle.load(f)
-            set_reinforce_params(reinforce_params)
+            TARGET.set_reinforce_params(reinforce_params)
 
     pass # class TrainStates
 

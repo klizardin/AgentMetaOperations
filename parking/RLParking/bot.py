@@ -145,11 +145,11 @@ class AsyncVehicleBot:
         if not self._ui_bot:
             return
         tl = np.float32(3.0)
-        pt0 = Point.vector_from_angle(TARGET_ANGLE, tl) + TARGET_POINT
-        pt1 = Point.vector_from_angle(TARGET_ANGLE + math.pi, tl) + TARGET_POINT
+        pt0 = Point.vector_from_angle(TARGET.TARGET_ANGLE, tl) + TARGET.TARGET_POINT
+        pt1 = Point.vector_from_angle(TARGET.TARGET_ANGLE + math.pi, tl) + TARGET.TARGET_POINT
         l1 = Line(pt0, pt1)
-        pt0 = Point.vector_from_angle(TARGET_ANGLE + math.pi*0.5, tl*0.5) + TARGET_POINT
-        pt1 = Point.vector_from_angle(TARGET_ANGLE + math.pi*1.5, tl*0.5) + TARGET_POINT
+        pt0 = Point.vector_from_angle(TARGET.TARGET_ANGLE + math.pi*0.5, tl*0.5) + TARGET.TARGET_POINT
+        pt1 = Point.vector_from_angle(TARGET.TARGET_ANGLE + math.pi*1.5, tl*0.5) + TARGET.TARGET_POINT
         l2 = Line(pt0, pt1)
         self._draw_line(l1, coefs, (128, 0, 0))
         self._draw_line(l2, coefs, (0, 128, 0))
