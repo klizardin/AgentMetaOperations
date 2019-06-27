@@ -78,42 +78,53 @@ WALLS = [
     Line(Point(-3, -15), Point(8, -15)),
 ]
 
-TARGET_POINT = Point(6.5, 0)
-TARGET_ANGLE = np.float32(math.pi*0.5)
-TARGET_POSITION_DEVIATION = np.float32(5.0) #6.5
-TARGET_ANGLE_DEVIATION = np.float32(math.pi*0.2) #0.2
-TARGET_POSITION_RB = np.float32(3.0) # 2.0
+class Target:
+    """class to update correctly"""
 
-TARGET_POINT_REINFORCE_DISTANCE = np.float32(9.0)
-TARGET_ANGLE_REINFORCE_DISTANCE = np.float32(math.pi*0.5)
-TARGET_VELOCITY_REINFORCE_DISTANCE = np.float32(4.0)
-TARGET_REINFORCE_BORDER = np.float32(0.95)
+    def __init__(self):
+        self.TARGET_POINT = Point(6.5, 0)
+        self.TARGET_ANGLE = np.float32(math.pi*0.5)
+        self.TARGET_POSITION_DEVIATION = np.float32(5.0) #6.5
+        self.TARGET_ANGLE_DEVIATION = np.float32(math.pi*0.2) #0.2
+        self.TARGET_POSITION_RB = np.float32(3.0) # 2.0
 
-TARGET_POINT_MAX_DISTANCE = np.float32(17.0)
-TARGET_CHANGE_LAMBDA = np.float32(1e-1)
+        self.TARGET_POINT_REINFORCE_DISTANCE = np.float32(9.0)
+        self.TARGET_POINT_REINFORCE_DISTANCE_NEAR = np.float32(0.5)
+        self.TARGET_ANGLE_REINFORCE_DISTANCE = np.float32(math.pi*0.5)
+        self.TARGET_VELOCITY_REINFORCE_DISTANCE = np.float32(5.0)
+        self.TARGET_REINFORCE_BORDER = np.float32(0.9)
 
+        self.TARGET_POINT_MAX_DISTANCE = np.float32(17.0)
+        self.TARGET_CHANGE_LAMBDA = np.float32(2e-5)
 
-def update_reinforce_distances(target_dist,angle_dist,velocity_dist):
-    global TARGET_POINT_REINFORCE_DISTANCE
-    global TARGET_ANGLE_REINFORCE_DISTANCE
-    global TARGET_VELOCITY_REINFORCE_DISTANCE
-    target_dist = min((TARGET_POINT_REINFORCE_DISTANCE, target_dist))
-    TARGET_POINT_REINFORCE_DISTANCE += np.float32(target_dist - TARGET_POINT_REINFORCE_DISTANCE)*TARGET_CHANGE_LAMBDA
-    angle_dist = min((TARGET_ANGLE_REINFORCE_DISTANCE, angle_dist))
-    TARGET_ANGLE_REINFORCE_DISTANCE += np.float32(angle_dist - TARGET_ANGLE_REINFORCE_DISTANCE)*TARGET_CHANGE_LAMBDA
-    velocity_dist = min((TARGET_VELOCITY_REINFORCE_DISTANCE, velocity_dist))
-    TARGET_VELOCITY_REINFORCE_DISTANCE += np.float32(velocity_dist - TARGET_VELOCITY_REINFORCE_DISTANCE)*TARGET_CHANGE_LAMBDA
+    def update_reinforce_distances(self, target_dist, angle_dist, velocity_dist):
+        target_dist = min((self.TARGET_POINT_REINFORCE_DISTANCE, target_dist))
+        l = self.TARGET_CHANGE_LAMBDA
+        if self.TARGET_POINT_REINFORCE_DISTANCE <= self.TARGET_POINT_REINFORCE_DISTANCE_NEAR:
+            l = math.pow(l, 2.0)
+        self.TARGET_POINT_REINFORCE_DISTANCE += np.float32(target_dist - self.TARGET_POINT_REINFORCE_DISTANCE)*l
+        if self.TARGET_POINT_REINFORCE_DISTANCE <= self.TARGET_POINT_REINFORCE_DISTANCE_NEAR:
+            angle_dist = min((self.TARGET_ANGLE_REINFORCE_DISTANCE, angle_dist))
+            self.TARGET_ANGLE_REINFORCE_DISTANCE += np.float32(angle_dist - self.TARGET_ANGLE_REINFORCE_DISTANCE)*l
+            velocity_dist = min((self.TARGET_VELOCITY_REINFORCE_DISTANCE, math.fabs(velocity_dist)))
+            self.TARGET_VELOCITY_REINFORCE_DISTANCE += np.float32(velocity_dist - self.TARGET_VELOCITY_REINFORCE_DISTANCE)*l
 
+    def get_reinforce_params(self):
+        return self.TARGET_POINT_REINFORCE_DISTANCE, self.TARGET_ANGLE_REINFORCE_DISTANCE, self.TARGET_VELOCITY_REINFORCE_DISTANCE
 
-def get_reinforce_params():
-    return TARGET_POINT_REINFORCE_DISTANCE, TARGET_ANGLE_REINFORCE_DISTANCE, TARGET_VELOCITY_REINFORCE_DISTANCE
+    def set_reinforce_params(self, params):
+        self.TARGET_POINT_REINFORCE_DISTANCE, self.TARGET_ANGLE_REINFORCE_DISTANCE, self.TARGET_VELOCITY_REINFORCE_DISTANCE = params
+        print("set reinforce params = ({}, {}, {})"
+              .format(self.TARGET_POINT_REINFORCE_DISTANCE,
+                      self.TARGET_ANGLE_REINFORCE_DISTANCE,
+                      self.TARGET_VELOCITY_REINFORCE_DISTANCE
+                      )
+              )
 
+    pass  # Target
 
-def set_reinforce_params(params):
-    global TARGET_POINT_REINFORCE_DISTANCE
-    global TARGET_ANGLE_REINFORCE_DISTANCE
-    global TARGET_VELOCITY_REINFORCE_DISTANCE
-    TARGET_POINT_REINFORCE_DISTANCE, TARGET_ANGLE_REINFORCE_DISTANCE, TARGET_VELOCITY_REINFORCE_DISTANCE = params
+TARGET = Target()  # need to correctly update params
+
 
 VISUALIZE_START_POSITIONS_WEIGHTS = False
 BASE_POS1_FOR_POS_GENERATOR = Point(-10.0, 15.0)
@@ -150,7 +161,7 @@ class PathesFunc:
 
 class Pathes:
     def __init__(self, version):
-        base_path = "tmp/parking/{0}/".format(version)
+        base_path = "/home/klizardin/tmp/parking/{0}/".format(version)
         self._pathes = {
             "tmp": base_path,
             "base_coordinates": os.path.join(base_path, "base_coordinates/") + "coords",
@@ -243,12 +254,14 @@ VEHICLE_STEP_DURATION = np.float32(1.0/VEHICLE_UI_BOT_STEPS_PER_SECOND)
 VEHICLE_MAX_DRIVE_DURATION = np.float32(60.0*2.0)
 VEHICLE_MAX_STAND_DURATION = np.float32(5)
 
-GAME_STATES_IN_DB_SIZE_MAX = 1024*16
-GAME_STATES_IN_DB_SIZE_MAX2 = 1024*17
+GAME_STATES_IN_DB_SIZE_MAX = 1024*31
+GAME_STATES_IN_DB_SIZE_MAX2 = 1024*32
 GAME_STATES_IN_DB_TO_START_TRAIN = 1024*10
 GAME_STATES_IN_DB_STEP_SIZE = 100
 GAME_STATES_IN_DB_REWARD_RATIO = np.float32(0.3333333)
-GAME_STATE_GETTED_MAX_COUNT = 20
+GAME_STATE_GETTED_MAX_COUNT = 27
 
 STATE_LEARN_VALUES_COUNT = 8
 SET_OPERATION_VALUES_PROB = np.float32(0.1)
+
+
