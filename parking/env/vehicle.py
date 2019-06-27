@@ -632,7 +632,7 @@ class Vehicle:
             pt, angle0 = copy.deepcopy(p.pos), p.angle
             si[4 + 3*i + 0] = np.float32(angle0/(math.pi*2.0) * 0.5)
             si[4 + 3*i + 1] = np.float32(-0.5 if pt.y < 0 else 0.5)
-            pt *= np.float32(1.0/TARGET_POINT_MAX_DISTANCE)
+            pt *= np.float32(1.0/TARGET.TARGET_POINT_MAX_DISTANCE)
             if pt.length() > 1:
                 pt *= np.float32(1.0/pt.length())
             si[4 + 3*i + 2] = np.float32(pt.x * 0.5)

@@ -30,42 +30,38 @@ def get_reward(old_values, new_values):
     assert((REWARD_KEY_ANGLE in old_values) and (REWARD_KEY_ANGLE in new_values))
     assert((REWARD_KEY_TIME in old_values) and (REWARD_KEY_TIME in new_values))
 
-    target_dist = (new_values[REWARD_KEY_POS] - TARGET_POINT).length()
+    target_dist = (new_values[REWARD_KEY_POS] - TARGET.TARGET_POINT).length()
     if (new_values[REWARD_KEY_COLLISION]
-            or (target_dist > TARGET_POINT_MAX_DISTANCE)
+            or (target_dist > TARGET.TARGET_POINT_MAX_DISTANCE)
             or (new_values[REWARD_KEY_DRIVE_TIME] > VEHICLE_MAX_DRIVE_DURATION)
         ):
-        return calc_fail_value(REINFORCE_FAIL, target_dist, TARGET_POINT_MAX_DISTANCE), True
+        return calc_fail_value(REINFORCE_FAIL, target_dist, TARGET.TARGET_POINT_MAX_DISTANCE), True
 
     if ((REWARD_KEY_STAND_TIME in old_values)
         and (
             np.fabs(new_values[REWARD_KEY_TIME] - old_values[REWARD_KEY_STAND_TIME])
             > VEHICLE_MAX_STAND_DURATION)
         ):
-        return calc_fail_value(REINFORCE_FAIL, target_dist, TARGET_POINT_MAX_DISTANCE), True
+        return calc_fail_value(REINFORCE_FAIL, target_dist, TARGET.TARGET_POINT_MAX_DISTANCE), True
 
-    angle_dist = angle_diff(new_values[REWARD_KEY_ANGLE],TARGET_ANGLE)
+    angle_dist = angle_diff(new_values[REWARD_KEY_ANGLE],TARGET.TARGET_ANGLE)
 
     # bound to [0 .. math.pi*0.5]
-    angle_dist = np.float32(math.fmod(angle_dist, math.pi))
-    if angle_dist < 0:
-        angle_dist = np.float32(angle_dist + math.pi)
+    angle_dist = np.float32(math.fmod(angle_dist + math.pi, math.pi))
+    angle_dist = np.float32(math.fmod(angle_dist + math.pi, math.pi))
     if angle_dist > math.pi*0.5:
         angle_dist = np.float32(math.pi - angle_dist)
 
     velocity_dist = new_values[REWARD_KEY_VELOCITY]
-    if (np.isclose(
-            target_dist, np.float32(0.0),
-            atol=TARGET_POINT_REINFORCE_DISTANCE*TARGET_REINFORCE_BORDER)
-        and np.isclose(
-                angle_dist, np.float32(0.0),
-                atol=TARGET_ANGLE_REINFORCE_DISTANCE*TARGET_REINFORCE_BORDER)
-        and np.isclose(
-                velocity_dist, np.float32(0.0),
-                atol=TARGET_VELOCITY_REINFORCE_DISTANCE*TARGET_REINFORCE_BORDER)
+    td = TARGET.TARGET_POINT_REINFORCE_DISTANCE * TARGET.TARGET_REINFORCE_BORDER
+    ta = TARGET.TARGET_ANGLE_REINFORCE_DISTANCE * TARGET.TARGET_REINFORCE_BORDER
+    tv = TARGET.TARGET_VELOCITY_REINFORCE_DISTANCE*TARGET.TARGET_REINFORCE_BORDER
+    if ((target_dist <= td)
+        and (angle_dist <= ta)
+        and (np.fabs(velocity_dist) <= tv)
         ):
-        update_reinforce_distances(target_dist, angle_dist, velocity_dist)
-        return calc_done_value(REINFORCE_DONE, target_dist, TARGET_POINT_MAX_DISTANCE), True
+        TARGET.update_reinforce_distances(target_dist, angle_dist, velocity_dist)
+        return calc_done_value(REINFORCE_DONE, target_dist, TARGET.TARGET_POINT_MAX_DISTANCE), True
 
     return (REINFORCE_NONE, False)
 
