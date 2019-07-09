@@ -17,6 +17,7 @@ def main():
                            reward_ratio=settings.GAME_STATES_IN_DB_REWARD_RATIO)
     for item in train_db.get_all_items():
         plot_state(item)
+    plt.axis([-5.0, 7.5, -15.0, 15.0])
     plt.show()
 
 

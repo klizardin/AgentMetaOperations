@@ -7,6 +7,7 @@ from geom.primitives import angle_diff
 from enum import Enum
 import copy
 from typing import List, AnyStr
+import scipy
 import numpy as np
 import math
 
@@ -577,10 +578,10 @@ class Vehicle:
             v._drive_time = dt
             v.commands(cmd)
             v.step(t, [])  # do not check for collision in dream functionality
-            if not np.allclose(v.velocity, 0.0, settings.VEHICLE.TRANSMISSION_SPEED[-1]*settings.VEHICLE.SMALL_SPEED_COEF):
-                res.append(v.get_last_operation_info())
+            angle_norm, velocifty_norm = v.get_last_operation_info()
+            if not np.allclose(velocifty_norm, 0.0, settings.VEHICLE.TRANSMISSION_SPEED[-1]*settings.VEHICLE.SMALL_SPEED_COEF):
+                res.append((angle_norm, velocifty_norm))
             else:
-                _, velocifty_norm = v.get_last_operation_info()
                 v._drive_time = dt
                 v._set_small_velocity()
                 v.setup_reward()
@@ -681,12 +682,10 @@ class Vehicle:
         current_angle = math.fmod(current_angle + np.float32(math.pi*2.0), np.float32(math.pi*2.0))
         prev_angle = math.fmod(prev_angle + np.float32(math.pi*2.0), np.float32(math.pi*2.0))
         sign = np.float32(1.0 if current_angle - prev_angle >= 0 else -1.0)
-        delta_angle = angle_diff(current_angle, prev_angle) * sign
-        delta_angle = min((settings.ANGLE_FOR_OPERATION_MAX, delta_angle))
-        delta_angle = max((settings.ANGLE_FOR_OPERATION_MIN, delta_angle))
-        delta_angle -= settings.ANGLE_FOR_OPERATION_MIN
-        delta_angle /= settings.ANGLE_FOR_OPERATION_MAX - settings.ANGLE_FOR_OPERATION_MIN
-        delta_angle -= np.float32(0.5)  # [-0.5..0.5]
+        delta_angle = angle_diff(current_angle, prev_angle)
+        delta_angle = scipy.special.erf(delta_angle/np.sqrt(settings.ANGLE_FOR_OPERATION_MAX/25))
+        delta_angle = delta_angle * sign
+        delta_angle *= np.float32(0.5)  # [-0.5..0.5]
         velocity_norm = np.float32(
                 (self._state.velocity - settings.VEHICLE.TRANSMISSION_SPEED[0])
                 / (settings.VEHICLE.TRANSMISSION_SPEED[-1] - settings.VEHICLE.TRANSMISSION_SPEED[0])

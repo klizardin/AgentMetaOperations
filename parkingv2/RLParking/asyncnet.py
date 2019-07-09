@@ -78,6 +78,7 @@ class AsyncNet:
             op_arr[int((op[0] + 0.5)*settings.ANGLES_FOR_OPERATIONS)] = np.float32(0.5)
             op_arr[settings.ANGLES_FOR_OPERATIONS+0] = np.fabs(op[1])
             op_arr[settings.ANGLES_FOR_OPERATIONS+1] = 0.5 if op[1] >= np.float32(0.0) else -0.5
+            # print("input: {}  {}".format(int((op[0] + 0.5)*settings.ANGLES_FOR_OPERATIONS), op[1]))
             x.append(np.concatenate((inputs_np, op_arr)))
         return NetData(np.stack(x))
 

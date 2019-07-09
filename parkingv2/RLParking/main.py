@@ -91,12 +91,11 @@ def main(argv):
             agent_cls=AsyncVehicleBot(ui_bot=False,start_coordinates=start_coordinates, env=env)
         ) : Request(RequestType.NOP),
         AsyncFunc.create_from_class(
-            agent_cls=AsyncVehicleBot(ui_bot=True,start_coordinates=start_coordinates, env=env)
+            agent_cls=AsyncVehicleBot(ui_bot=True, start_coordinates=start_coordinates, env=env)
         ) : Request(RequestType.NOP),
         AsyncFunc.create_from_class(
             agent_cls=AsyncTrain(db=train_db, env=env)
         ) : Request(RequestType.NOP),
-        # AsyncFunc.create_from_class(agent_cls=AsyncCNNTrainDataCreater(db=game_db)) : Request(RequestType.NOP),
     }
     processors = [
         Processor.create_from_class(agent_cls=AsyncNet(db=train_db)),

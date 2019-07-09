@@ -98,7 +98,7 @@ class Target:
 
         self.TARGET_POINT_MAX_DISTANCE = np.float32(17.0)
         #self.TARGET_CHANGE_LAMBDA = np.float32(3.33333333e-5)
-        self.TARGET_CHANGE_LAMBDA = np.float32(1.0e-6)
+        self.TARGET_CHANGE_LAMBDA = np.float32(3.333333333e-6)
 
     def update_reinforce_distances(self, target_dist, angle_dist, velocity_dist):
         target_dist = min((self.TARGET_POINT_REINFORCE_DISTANCE, target_dist))

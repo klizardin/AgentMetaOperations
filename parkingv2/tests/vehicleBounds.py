@@ -36,7 +36,7 @@ def main():
         res[i] = delta_angle
         res1[i] = velocity
     #res[:] *= np.float32(2.0)
-    res[:] *= np.float32(180.0/math.pi)
+    #res[:] *= np.float32(180.0/math.pi)
     plt.hist(res)
     plt.show()
 
