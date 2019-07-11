@@ -241,6 +241,7 @@ class AsyncVehicleBot:
             index = indexes[i]
             v = Vehicle("test_values")
             v.state = self._vehicle.state
+            pos_end = pos_start = v.state.get_at(0).pos
             steps = 0
             op = ops[index]
             selected_commands.append(op)
@@ -267,8 +268,13 @@ class AsyncVehicleBot:
                 last_op_ok, reward = v.step(t=settings.VEHICLE_STEP_DURATION, lines=self._env.get_lines())
                 final_state = not ((not reward[1]) and last_op_ok)
                 reward_value = reward[0]
+                pos_end = v.state.get_at(0).pos
                 steps += 1
-            values[i] = np.float32(math.pow(settings.RL_RO_COEF,steps)*reward_value)
+            drive_length = (pos_end - pos_start).length()
+            c1 = math.pow(settings.RL_RO_COEF, steps)
+            c2 = math.pow(settings.RL_RO_COEF, drive_length/(settings.VEHICLE.TRANSMISSION_SPEED[-1]*np.float32(0.5)))
+            c_reward = max((c1,c2))
+            values[i] = np.float32(c_reward*reward_value)
         if not selected_ops:
             return None, None, None
         else:
