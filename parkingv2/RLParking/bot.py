@@ -271,9 +271,12 @@ class AsyncVehicleBot:
                 pos_end = v.state.get_at(0).pos
                 steps += 1
             drive_length = (pos_end - pos_start).length()
-            c1 = math.pow(settings.RL_RO_COEF, steps)
-            c2 = math.pow(settings.RL_RO_COEF, drive_length/(settings.VEHICLE.TRANSMISSION_SPEED[-1]*np.float32(0.5)))
-            c_reward = max((c1,c2))
+            if reward_value < 0:
+                c1 = math.pow(settings.RL_RO_COEF, steps)
+                c2 = math.pow(settings.RL_RO_COEF, drive_length/(settings.VEHICLE.TRANSMISSION_SPEED[-1]*np.float32(0.5)))
+                c_reward = max((c1,c2))
+            else:
+                c_reward = math.pow(settings.RL_RO_COEF, steps)
             values[i] = np.float32(c_reward*reward_value)
         if not selected_ops:
             return None, None, None
