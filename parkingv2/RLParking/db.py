@@ -1,6 +1,6 @@
 from geom.primitives import Point
 from env.vehicle import VehicleState
-import RLParking.settings as settings
+from RLParking.settings import settings
 from RLParking.request import RequestType, Request
 from geom.utils import radix_sorted, radix_sorted_indexes, froze_class
 
@@ -19,7 +19,7 @@ class StartCoord:
         self.weight = weight
         pass
 
-    pass #class StartCoord
+    pass  # class StartCoord
 
 
 class StartCoordinates:
@@ -32,16 +32,16 @@ class StartCoordinates:
         p2 = Point.between(self._start_positions[1].pt0, self._start_positions[1].pt1, r[0])
         p = Point.between(p1, p2, r[1])
         return [StartCoord(
-            pos = p,
-            angle = np.random.randint(0,2)*np.float32(math.pi) + np.float32(math.pi*0.5),
-            weight = 1.0
-        )
-        for _ in range(count)]
+            pos=p,
+            angle=np.random.randint(0, 2)*np.float32(math.pi) + np.float32(math.pi*0.5),
+            weight=1
+            )
+            for _ in range(count)]
 
     def get_pos_with_weights(self):
         return
 
-    pass #class StartCoordinates
+    pass  # class StartCoordinates
 
 
 @froze_class
@@ -61,7 +61,7 @@ class TrainState:
 
     def has_reward(self):
         if settings.USE_LEARNING_BOOST:
-            return (self.reward >= settings.REINFORCE_DONE * np.float32(0.8))
+            return self.reward >= settings.REINFORCE_DONE * np.float32(0.8)
         else:
             return ((self.reward >= settings.REINFORCE_DONE * np.float32(0.8))
                 or (self.reward <= settings.REINFORCE_FAIL * np.float32(0.8)))
@@ -79,7 +79,7 @@ class TrainState:
     def has_values(self):
         return self.ops is not None if self.getted < settings.GAME_STATE_GETTED_MAX_COUNT else False
 
-    pass # class TrainState
+    pass  # class TrainState
 
 
 class TrainStates:
@@ -118,14 +118,14 @@ class TrainStates:
         if self._states:
             self._avg_got = sum([s.getted for s in self._states])/len(self._states)
             self._avg_reward = sum([s.reward for s in self._states])/len(self._states)
-            self._avg_values = sum([1 if s.has_values() else 0 for  s in self._states])/len(self._states)
+            self._avg_values = sum([1 if s.has_values() else 0 for s in self._states])/len(self._states)
         else:
             self._avg_got = 0.0
             self._avg_reward = 0.0
             self._avg_values = 0.0
 
     @staticmethod
-    def has_reward(s:TrainState, max_reward, inverse=False):
+    def has_reward(s: TrainState, max_reward, inverse=False):
         v = s.get_reward_index(max_reward)
         if inverse:
             v = 9 - v
@@ -139,11 +139,11 @@ class TrainStates:
         self._init_max_reward()
         self._states = radix_sorted(
             self._states, 1,
-            key=partial(TrainStates.has_reward, max_reward = self._max_reward, inverse=True)
+            key=partial(TrainStates.has_reward, max_reward=self._max_reward, inverse=True)
         )
-        l = int(self._reward_ratio*len(self._states))
-        more = self._states[l:]
-        self._states = self._states[:l]
+        length = int(self._reward_ratio*len(self._states))
+        more = self._states[length:]
+        self._states = self._states[:length]
         random.shuffle(more)
         self._states = self._states + more
         self._states = self._states[:self._max_length]
@@ -173,7 +173,7 @@ class TrainStates:
         self._indexes = np.array(
             radix_sorted_indexes(
                 self._states, 1,
-                key=partial(TrainStates.has_reward, max_reward = self._max_reward, inverse=True)
+                key=partial(TrainStates.has_reward, max_reward=self._max_reward, inverse=True)
             ),
             dtype=np.int32)
         self._reward_count = sum(
@@ -194,10 +194,10 @@ class TrainStates:
             p2 /= (items_count - self._reward_count)
         if self._reward_count > 0:
             p1 /= self._reward_count
-        p = np.zeros((items_count,),dtype=np.float32)
+        p = np.zeros((items_count,), dtype=np.float32)
         p[:self._reward_count] = np.float32(p1)
         p[self._reward_count:] = np.float32(p2)
-        indexes = np.random.choice(self._indexes ,count,replace=False,p=p)
+        indexes = np.random.choice(self._indexes, count, replace=False, p=p)
         for i in range(count):
             self._states[indexes[i]].getted += 1
         return [self._states[indexes[i]] for i in range(count)]
@@ -218,7 +218,7 @@ class TrainStates:
             reinforce_params, self._states = pickle.load(f)
             settings.TARGET.set_reinforce_params(reinforce_params)
 
-    pass # class TrainStates
+    pass  # class TrainStates
 
 
 class AsyncTrainDBProcessor:
@@ -237,4 +237,4 @@ class AsyncTrainDBProcessor:
             )
         return True
 
-    pass # class AsyncTrainDBProcessor
+    pass  # class AsyncTrainDBProcessor

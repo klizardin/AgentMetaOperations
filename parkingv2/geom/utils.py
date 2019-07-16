@@ -36,28 +36,30 @@ class SingletonDecorator:
         self.klass = klass
         self.instance = None
 
-    def __call__(self,*args,**kwargs):
-        if self.instance == None:
-            self.instance = self.klass(*args,**kwargs)
+    def __call__(self, *args, **kwargs):
+        if self.instance is None:
+            self.instance = self.klass(*args, **kwargs)
         return self.instance
 
 
 def counting_sort_indexes(tlist_len, indexes_src, k, get_sortkey):
     """ Counting sort algo.
         Args:
-            tlist: target list to sort
+            tlist_len: target list to sort
+            indexes_src: sorce indexies
             k: max value assume known before hand
-            get_sortkey: function to retrieve the key that is apply to elements of tlist to be used in the count list index.
+            get_sortkey: function to retrieve the key that is apply to elements of tlist
+            to be used in the count list index.
             map info to index of the count list.
         Adv:
             The count (after cum sum) will hold the actual position of the element in sorted order
     """
 
     # Create a count list and using the index to map to the integer in tlist.
-    if tlist_len==0:
+    if tlist_len == 0:
         return list()
 
-    count_list = [0] * (k)
+    count_list = [0] * k
 
     # iterate the tgt_list to put into count list
     for i in range(tlist_len):
@@ -67,10 +69,10 @@ def counting_sort_indexes(tlist_len, indexes_src, k, get_sortkey):
 
     # Modify count list such that each index of count list is the combined sum of the previous counts
     # each index indicate the actual position (or sequence) in the output sequence.
-    for i in range(1,k):
+    for i in range(1, k):
         count_list[i] += count_list[i-1]
 
-    indexes = [0] * (tlist_len)
+    indexes = [0] * tlist_len
     for i in range(tlist_len-1, -1, -1):
         sortkey = get_sortkey(i)
         indexes[count_list[sortkey]-1] = indexes_src[i]
@@ -84,14 +86,15 @@ def counting_sort(tlist, k, get_sortkey):
         Args:
             tlist: target list to sort
             k: max value assume known before hand
-            get_sortkey: function to retrieve the key that is apply to elements of tlist to be used in the count list index.
+            get_sortkey: function to retrieve the key that is apply to elements of tlist
+            to be used in the count list index.
             map info to index of the count list.
         Adv:
             The count (after cum sum) will hold the actual position of the element in sorted order
     """
 
     # Create a count list and using the index to map to the integer in tlist.
-    count_list = [0] * (k)
+    count_list = [0] * k
 
     # iterate the tgt_list to put into count list
     for item in tlist:
@@ -101,7 +104,7 @@ def counting_sort(tlist, k, get_sortkey):
 
     # Modify count list such that each index of count list is the combined sum of the previous counts
     # each index indicate the actual position (or sequence) in the output sequence.
-    for i in range(1,k):
+    for i in range(1, k):
         count_list[i] += count_list[i-1]
 
     output = [None] * len(tlist)
@@ -114,7 +117,7 @@ def counting_sort(tlist, k, get_sortkey):
 
 
 def radix_sorted(tlist, k, key):
-    def get_sortkey2(item, digit_place = 2):
+    def get_sortkey2(item, digit_place=2):
         return (key(item)//10**digit_place) % 10
 
     result = tlist
@@ -130,14 +133,13 @@ def radix_sorted_indexes(tlist, k, key):
     else:
         indexes = list(range(len(tlist)))
 
-    def get_sortkey2(i, digit_place=2):
-        index = indexes[i]
+    def get_sortkey2(idice, digit_place=2):
+        index = indexes[idice]
         item = tlist[index]
-        k = key(item)
-        return (k// 10 ** digit_place) % 10
+        k_val = key(item)
+        return (k_val // 10 ** digit_place) % 10
 
     for i in range(k):
         indexes = counting_sort_indexes(len(tlist) if tlist else 0, indexes, 10, partial(get_sortkey2, digit_place=i))
 
     return indexes
-

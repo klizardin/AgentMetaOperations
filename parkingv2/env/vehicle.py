@@ -1,4 +1,4 @@
-import RLParking.settings as settings
+from RLParking.settings import settings
 from geom.primitives import Point, Line
 from geom.utils import froze_class
 from RLParking.reward import Reward
@@ -43,7 +43,7 @@ class StaticVehicle:
     def rotation(self):
         return self._angle
 
-    pass #class StaticVehicle
+    pass  # class StaticVehicle
 
 
 class StaticEnv:
@@ -60,7 +60,7 @@ class StaticEnv:
         all_lines.extend(self.walls)
         return all_lines
 
-    pass # class StaticEnv
+    pass  # class StaticEnv
 
 
 class VehicleOp(Enum):
@@ -76,7 +76,8 @@ class VehicleOp(Enum):
     ROTATE_LEFT_1 = 9
     ROTATE_LEFT_2 = 10
 
-    pass # class VehicleOp
+    pass  # class VehicleOp
+
 
 VEHICLE_ACCELERATE_OPS = [
     VehicleOp.ACCELERATE_BACKWARD_2, VehicleOp.ACCELERATE_BACKWARD_1,
@@ -84,31 +85,42 @@ VEHICLE_ACCELERATE_OPS = [
     VehicleOp.ACCELERATE_FORWARD_1, VehicleOp.ACCELERATE_FORWARD_2
 ]
 
+
 VEHICLE_ROTATE_OPS = [
     VehicleOp.ROTATE_RIGHT_2, VehicleOp.ROTATE_RIGHT_1,
     VehicleOp.ROTATE_NONE,
     VehicleOp.ROTATE_LEFT_1, VehicleOp.ROTATE_LEFT_2
 ]
 
-#VEHICLE_TRANSMITE_OPS = [VehicleOp.FORWARD, VehicleOp.BACKWARD]
+
+# VEHICLE_TRANSMITE_OPS = [VehicleOp.FORWARD, VehicleOp.BACKWARD]
+
 
 VEHICLE_POSSIBLE_OPERATIONS = [
     (VehicleOp.NONE,),
 ]
 
-#for o in VEHICLE_TRANSMITE_OPS:
+# for o in VEHICLE_TRANSMITE_OPS:
 #    VEHICLE_POSSIBLE_OPERATIONS.append((o,))
 
-for r in VEHICLE_ROTATE_OPS:
-    for a in VEHICLE_ACCELERATE_OPS:
-        if ((a.value == VehicleOp.ACCELERATE_NONE.value)
-            and (r.value == VehicleOp.ROTATE_NONE.value)):
-            continue
-        VEHICLE_POSSIBLE_OPERATIONS.append((r,a))
+
+def init_all_ops(pos_ops):
+    for rotate_op in VEHICLE_ROTATE_OPS:
+        for angle_op in VEHICLE_ACCELERATE_OPS:
+            if ((angle_op.value == VehicleOp.ACCELERATE_NONE.value)
+                and (rotate_op.value == VehicleOp.ROTATE_NONE.value)
+            ):
+                continue
+            pos_ops.append((rotate_op, angle_op))
+    return pos_ops
+
+
+VEHICLE_POSSIBLE_OPERATIONS = init_all_ops(VEHICLE_POSSIBLE_OPERATIONS)
 
 
 def get_breaks_count():
     return int(np.sum(np.where(settings.VEHICLE.TRANSMISSION_ACCELERATION < 0.0, 1, 0)))
+
 
 def get_accelaration_count():
     return int(np.sum(np.where(settings.VEHICLE.TRANSMISSION_ACCELERATION > 0.0, 1, 0)))
@@ -116,8 +128,9 @@ def get_accelaration_count():
 
 @froze_class
 class VehicleOperation:
-    def __init__(self, id:VehicleOp, name: AnyStr, forward: bool = None, acceleration: int = None, rotate: int = None):
-        self.id = id
+    def __init__(self, op_id: VehicleOp, name: AnyStr, forward: bool = None,
+                 acceleration: int = None, rotate: int = None):
+        self.op_id = op_id
         self.name = name
         self.forward = forward
         if acceleration is not None:
@@ -128,12 +141,13 @@ class VehicleOperation:
             self.accelaration_value = None
         self.rotate = rotate
 
-    pass # class VehicleOperation
+    pass  # class VehicleOperation
+
 
 VEHICLE_SINGLE_OPERATIONS = {
-    VehicleOp.NONE :  VehicleOperation(VehicleOp.NONE, "none"),
-    #VehicleOp.FORWARD : VehicleOperation(VehicleOp.FORWARD, "forward", forward=True),
-    #VehicleOp.BACKWARD : VehicleOperation(VehicleOp.BACKWARD, "backward", forward=False),
+    VehicleOp.NONE:  VehicleOperation(VehicleOp.NONE, "none"),
+    # VehicleOp.FORWARD : VehicleOperation(VehicleOp.FORWARD, "forward", forward=True),
+    # VehicleOp.BACKWARD : VehicleOperation(VehicleOp.BACKWARD, "backward", forward=False),
     VehicleOp.ACCELERATE_BACKWARD_2: VehicleOperation(VehicleOp.ACCELERATE_BACKWARD_2, "break_2", acceleration=0),
     VehicleOp.ACCELERATE_BACKWARD_1: VehicleOperation(VehicleOp.ACCELERATE_BACKWARD_1, "break_1", acceleration=1),
     VehicleOp.ACCELERATE_NONE: VehicleOperation(VehicleOp.ACCELERATE_NONE, "accelerate_0", acceleration=2),
@@ -146,10 +160,10 @@ VEHICLE_SINGLE_OPERATIONS = {
     VehicleOp.ROTATE_RIGHT_2: VehicleOperation(VehicleOp.ROTATE_RIGHT_2, "right_2", rotate=2),
 }
 
-#VEHICLE_POSSIBLE_OPERATIONS = [
+# VEHICLE_POSSIBLE_OPERATIONS = [
 #    (VEHICLE_SINGLE_OPERATIONS[i] for i in line)
 #    for line in VEHICLE_POSSIBLE_OPERATIONS
-#]
+# ]
 
 
 @froze_class
@@ -159,11 +173,21 @@ class VehiclePos:
         self.angle = angle
         self.t = t
 
-    pass # class VehiclePos
+    pass  # class VehiclePos
 
 
 class VehicleState:
     def __init__(self):
+        self.velocity = np.float32(0.0)
+        self.acceleration = np.float32(0.0)
+        self.front = True
+        self.wheel_angle = np.float32(0.0)
+        self.wheel_delta_angle = np.float32(0.0)
+        self.states = list()
+        self.commads = (VehicleOp.NONE,)
+        self.last_transmite_op = None
+        self.last_rotate_op = None
+        self.last_accelerate_op = None
         self.clear()
 
     def add(self, dt: np.float32):
@@ -195,8 +219,8 @@ class VehicleState:
         return self.states[-1].angle
 
     @angle.setter
-    def angle(self, a):
-        self.states[-1].angle = np.float32(a)
+    def angle(self, angle):
+        self.states[-1].angle = np.float32(angle)
 
     @property
     def last_time(self):
@@ -220,9 +244,8 @@ class VehicleState:
         self.wheel_angle = np.float32(0.0)
         self.wheel_delta_angle = np.float32(0.0)
         self.states = list()
-        p = VehiclePos(Point(0,0), 0, 0.0)
-        self.states.append(p)
-        self.commads = (VehicleOp.NONE)
+        self.states.append(VehiclePos(Point(0, 0), np.float32(0.0), np.float32(0.0)))
+        self.commads = (VehicleOp.NONE,)
         self.last_transmite_op = None
         self.last_rotate_op = None
         self.last_accelerate_op = None
@@ -237,8 +260,8 @@ class VehicleState:
 
     def set_commands(self, cmds):
         self.commads = cmds
-        #transmite_cmds = VehicleState._cmds_of_ops(cmds, VEHICLE_TRANSMITE_OPS)
-        #if transmite_cmds:
+        # transmite_cmds = VehicleState._cmds_of_ops(cmds, VEHICLE_TRANSMITE_OPS)
+        # if transmite_cmds:
         #    self.last_transmite_op = transmite_cmds[0]
         rotate_cmds = VehicleState._cmds_of_ops(cmds, VEHICLE_ROTATE_OPS)
         if rotate_cmds:
@@ -265,7 +288,7 @@ class VehicleState:
             settings.REWARD_KEY_TIME: self.last_time
         }
 
-    pass #class VehicleState
+    pass  # class VehicleState
 
 
 class Vehicle:
@@ -330,12 +353,12 @@ class Vehicle:
     def reset(self):
         self._state.stop()
 
-    def initialize(self, pos : Point, angle, velocity, lines: List[Line] = None):
+    def initialize(self, pos: Point, angle, velocity, lines: List[Line] = None):
         self.reset()
         self._state.clear()
         if (lines is not None) and self._check_collision(pos, np.float32(angle), lines):
             return False
-        self._state.replace(pos, angle, 0.0)
+        self._state.replace(pos, angle, np.float32(0.0))
         self._state.velocity = np.float32(velocity)
         self._drive_time = np.float32(0.0)
         return True
@@ -343,7 +366,7 @@ class Vehicle:
     def setup_reward(self):
         self._reward.set_values(self._vehicle_id, self._state.to_reward_values())
 
-    def commands(self, cmds : List[VehicleOperation]):
+    def commands(self, cmds: List[VehicleOp]):
         if not cmds:
             return
         self.setup_reward()
@@ -364,42 +387,42 @@ class Vehicle:
                 self.command_turn(cmd.rotate)
         self._state.set_commands(cmds)
 
-    #def _can_use_transmite_commands(self):
+    # def _can_use_transmite_commands(self):
     #    return np.isclose(self._state.velocity, np.float32(0.0), atol=1e-1)
 
-    def get_next_available_ops(self, filter: bool = False):
+    def get_next_available_ops(self, filter_ops: bool = False):
         cmds = [(VehicleOp.NONE,)]
-        #if self._can_use_transmite_commands():
+        # if self._can_use_transmite_commands():
         #    cmds.extend([(o,) for o in VEHICLE_TRANSMITE_OPS])
-        for r in VEHICLE_ROTATE_OPS:
-            for a in VEHICLE_ACCELERATE_OPS:
-                #if filter:
+        for rot_op in VEHICLE_ROTATE_OPS:
+            for angle_op in VEHICLE_ACCELERATE_OPS:
+                # if filter_ops:
                 #    if (self._state.last_rotate_op is not None
-                #        and abs(self._state.last_rotate_op.value - r.value) > 1
+                #        and abs(self._state.last_rotate_op.value - rot_op.value) > 1
                 #        ):
                 #        continue
                 #    if (self._state.last_accelerate_op is not None
-                #        and abs(self._state.last_accelerate_op.value - a.value) > 1
+                #        and abs(self._state.last_accelerate_op.value - angle_op.value) > 1
                 #        ):
                 #        continue
                 if (
-                    (r.value == VehicleOp.ROTATE_NONE.value)
-                    and (a.value == VehicleOp.ACCELERATE_NONE.value)
+                    (rot_op.value == VehicleOp.ROTATE_NONE.value)
+                    and (angle_op.value == VehicleOp.ACCELERATE_NONE.value)
                     ):
                     continue
-                #if (np.isclose(self._state.velocity,np.float32(0.0))
-                #    and (a.value < VehicleOp.ACCELERATE_NONE.value)
+                # if (np.isclose(self._state.velocity, np.float32(0.0))
+                #    and (angle_op.value < VehicleOp.ACCELERATE_NONE.value)
                 #    ):
                 #    continue
-                cmds.append((r, a))
+                cmds.append((rot_op, angle_op))
         return cmds
 
-    #def command_transmission(self, front : bool):
-    #    """
-    #    set up transmission of vehicle
-    #    :param front: True or False - move forward or backward
-    #    :return: True if command have been done ok
-    #    """
+    def command_transmission(self, front: bool):
+        """
+        set up transmission of vehicle
+        :param front: True or False - move forward or backward
+        :return: True if command have been done ok
+        """
     #    if self._can_use_transmite_commands():
     #        self._state.front = front
     #        return True
@@ -407,6 +430,7 @@ class Vehicle:
     #        print("{} is not stoped to switch transmission to {}"
     #              .format(self._name, "forward" if front else "backward"))
     #        return False
+        pass
 
     def get_backward_count(self):
         """
@@ -420,25 +444,27 @@ class Vehicle:
         """
         return get_accelaration_count()
 
-    def command_backward(self, value : int):
+    def command_backward(self, value: int):
         """
         implement break command
         :param value: [0, get_break_count()] possible commands to lower speed of vehicle
         :return: True if command have been done ok
         """
         bc = self.get_backward_count()
-        if value < 0 or value > bc: return False
+        if (value < 0) or (value > bc):
+            return False
         self._state.acceleration = settings.VEHICLE.TRANSMISSION_ACCELERATION[bc - value]
         return True
 
-    def command_accelerate(self, value : int):
+    def command_accelerate(self, value: int):
         """
         :param value: [0, get_acceleration_count()] possible commands to accelerate vihicle
         :return: True if command done have been ok
         """
         bc = self.get_backward_count()
         ac = self.get_acceleration_count()
-        if value < 0 or value > ac: return False
+        if (value < 0) or (value > ac):
+            return False
         self._state.acceleration = settings.VEHICLE.TRANSMISSION_ACCELERATION[value + bc]
         return True
 
@@ -448,18 +474,19 @@ class Vehicle:
         """
         return settings.VEHICLE.ROTATE_ACCELERATION.shape[0] // 2
 
-    def command_turn(self, value : int):
+    def command_turn(self, value: int):
         """
         :param value: [-get_rotate_count(), get_rotate_count()] command to turn
         :return: True if command have been done ok
         """
         rc = self.get_rotate_count()
-        if value < -rc or value > rc: return False
+        if (value < -rc) or (value > rc):
+            return False
         self._state.wheel_delta_angle = settings.VEHICLE.ROTATE_ACCELERATION[rc + value]
         return True
 
-    def _velocity_step(self, t : np.float32):
-        self._state.velocity += self._state.acceleration * t #* np.float32(1.0 if self.front else -1.0)
+    def _velocity_step(self, t: np.float32):
+        self._state.velocity += self._state.acceleration * t  # * np.float32(1.0 if self.front else -1.0)
         assert(settings.VEHICLE.TRANSMISSION_SPEED[-1] > 0)
         if self._state.velocity > settings.VEHICLE.TRANSMISSION_SPEED[-1]:
             self._state.velocity = settings.VEHICLE.TRANSMISSION_SPEED[-1]
@@ -468,9 +495,9 @@ class Vehicle:
             self._state.velocity = settings.VEHICLE.TRANSMISSION_SPEED[0]
         return True
 
-    def _turn_step(self, t : np.float32):
+    def _turn_step(self, t: np.float32):
         self._state.wheel_angle += self._state.wheel_delta_angle * t
-        assert(settings.VEHICLE.ROTATE_ANGLE_BOUNDS[0] < 0 and settings.VEHICLE.ROTATE_ANGLE_BOUNDS[-1] > 0)
+        assert((settings.VEHICLE.ROTATE_ANGLE_BOUNDS[0] < 0) and (settings.VEHICLE.ROTATE_ANGLE_BOUNDS[-1] > 0))
         if self._state.wheel_angle < settings.VEHICLE.ROTATE_ANGLE_BOUNDS[0]:
             self._state.wheel_angle = settings.VEHICLE.ROTATE_ANGLE_BOUNDS[0]
         if self._state.wheel_angle > settings.VEHICLE.ROTATE_ANGLE_BOUNDS[-1]:
@@ -504,14 +531,14 @@ class Vehicle:
         ]
         res = list()
         for pt in pts:
-            a = self._state.angle - self._state.wheel_angle
-            pt1 = Point.vector_from_angle(a) * settings.VEHICLE.WHEEL_SIZE + pt
-            pt2 = Point.vector_from_angle(a + math.pi) * settings.VEHICLE.WHEEL_SIZE + pt
+            angle = self._state.angle - self._state.wheel_angle
+            pt1 = Point.vector_from_angle(angle) * settings.VEHICLE.WHEEL_SIZE + pt
+            pt2 = Point.vector_from_angle(angle + math.pi) * settings.VEHICLE.WHEEL_SIZE + pt
             res.append(pt1)
             res.append(pt2)
         return res
 
-    def _check_collision(self, pos: Point, angle:np.float32, lines: List[Line]):
+    def _check_collision(self, pos: Point, angle: np.float32, lines: List[Line]):
         bounds_lines = get_lines(self._get_bounds(pos, angle))
         for bl in bounds_lines:
             for l in lines:
@@ -520,26 +547,26 @@ class Vehicle:
                     return True
         return False
 
-    def _move_linear(self, t : np.float32, lines: List[Line]):
-        len = self._state.velocity * t
-        pos = self._state.pos + Point.vector_from_angle(self._state.angle)*len
+    def _move_linear(self, t: np.float32, lines: List[Line]):
+        run_len = self._state.velocity * t
+        pos = self._state.pos + Point.vector_from_angle(self._state.angle)*run_len
         if self._check_collision(pos, self._state.angle, lines):
             return False
         self._state.pos = pos
         return True
 
-    def _move_with_turn(self, t : np.float32, lines: List[Line]):
-        len = self._state.velocity * t
-        if np.allclose(len, 0.0, 1e-5):
+    def _move_with_turn(self, t: np.float32, lines: List[Line]):
+        run_len = self._state.velocity * t
+        if np.allclose(run_len, np.float32(0.0), np.float32(1e-5)):
             return True
         abpt = (settings.VEHICLE.AXLE_BACK[0] + settings.VEHICLE.AXLE_BACK[1]) * 0.5 + self._state.pos
         afpt = (settings.VEHICLE.AXLE_FRONT[0] + settings.VEHICLE.AXLE_FRONT[1]) * 0.5 + self._state.pos
         al = (abpt - afpt).length()
-        Rb = np.float32(al / math.tan(math.fabs(self._state.wheel_angle)))
-        beta = len/Rb
+        rb = np.float32(al / math.tan(math.fabs(self._state.wheel_angle)))
+        beta = run_len/rb
         beta = np.float32(-beta if self._state.wheel_angle >= 0 else beta)
         move_angle = (self._state.angle + beta*0.5)
-        delta_move = Point.vector_from_angle(move_angle, r=len)
+        delta_move = Point.vector_from_angle(move_angle, r=run_len)
         pos = self._state.pos + delta_move
         angle_new = self._state.angle + beta
         if self._check_collision(pos, angle_new, lines):
@@ -579,7 +606,9 @@ class Vehicle:
             v.commands(cmd)
             v.step(t, [])  # do not check for collision in dream functionality
             angle_norm, velocifty_norm = v.get_last_operation_info()
-            if not np.allclose(velocifty_norm, 0.0, settings.VEHICLE.TRANSMISSION_SPEED[-1]*settings.VEHICLE.SMALL_SPEED_COEF):
+            if not np.allclose(velocifty_norm, np.float32(0.0),
+                               settings.VEHICLE.TRANSMISSION_SPEED[-1]*settings.VEHICLE.SMALL_SPEED_COEF
+                               ):
                 res.append((angle_norm, velocifty_norm))
             else:
                 v._drive_time = dt
@@ -597,10 +626,13 @@ class Vehicle:
         :return: if step was ok
         """
         t = np.float32(t)
-        if t <= 0: return False, False
+        if t <= 0:
+            return False, False
         self._state.add(t)
-        if not self._velocity_step(t): return False, False
-        if not self._turn_step(t): return False, False
+        if not self._velocity_step(t):
+            return False, False
+        if not self._turn_step(t):
+            return False, False
         if np.allclose(self._state.wheel_angle, 0.0, 1e-2):
             return True, self._move_linear(t, lines)
         else:
@@ -620,7 +652,7 @@ class Vehicle:
                 dist.append(settings.MAX_INPUT_LINE_LENGTH)
                 lmin = min(dist)
                 pt2 = Point.vector_from_angle(angle, lmin) + pt
-                inp.append(Line(pt,pt2))
+                inp.append(Line(pt, pt2))
             inputs.append(inp)
         return inputs
 
@@ -694,8 +726,4 @@ class Vehicle:
         assert(velocity_norm >= np.float32(-0.5) and velocity_norm <= np.float32(0.5))
         return delta_angle, velocity_norm
 
-    pass #class Vehicle
-
-
-
-
+    pass  # class Vehicle

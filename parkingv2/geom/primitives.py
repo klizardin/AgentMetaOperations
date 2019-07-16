@@ -25,25 +25,25 @@ class Point:
         self.y = np.float32(y)
 
     def to_numpy_array(self):
-        return np.array([self.x,self.y], dtype=np.float32)
+        return np.array([self.x, self.y], dtype=np.float32)
 
     def __eq__(self, other):
         return np.allclose(self.to_numpy_array(), other.to_numpy_array(), rtol=1e-6, atol=1e-2)
 
     def __add__(self, other):
-        pt = Point(x = self.x, y = self.y)
+        pt = Point(x=self.x, y=self.y)
         pt.x += np.float32(other.x)
         pt.y += np.float32(other.y)
         return pt
 
     def __sub__(self, other):
-        pt = Point(x = self.x, y = self.y)
+        pt = Point(x=self.x, y=self.y)
         pt.x -= np.float32(other.x)
         pt.y -= np.float32(other.y)
         return pt
 
     def __mul__(self, other):
-        pt = Point(x = self.x, y = self.y)
+        pt = Point(x=self.x, y=self.y)
         c = np.float32(other)
         pt.x *= c
         pt.y *= c
@@ -51,10 +51,10 @@ class Point:
 
     def rotate(self, pt_base, angle):
         pt = Point(self.x, self.y) - pt_base
-        l = pt.length()
+        length = pt.length()
         a = math.atan2(pt.y, pt.x)
         angle += a
-        pt = Point(math.cos(angle)*l, math.sin(angle)*l)
+        pt = Point(math.cos(angle)*length, math.sin(angle)*length)
         pt += pt_base
         return pt
 
@@ -79,15 +79,17 @@ class Point:
     def scalar(p1, p2):
         l1 = p1.length()
         l2 = p2.length()
-        if l1 > 0: p1 *= np.float32(1.0)/l1
-        if l2 > 0: p2 *= np.float32(1.0)/l2
+        if l1 > 0:
+            p1 *= np.float32(1.0)/l1
+        if l2 > 0:
+            p2 *= np.float32(1.0)/l2
         v = p1.x*p2.x + p1.y*p2.y
         v = max((min((v, np.float32(1.0))), np.float32(-1.0)))
         return np.float32(v)
 
     @staticmethod
     def scalar_angle(p1, p2):
-        return np.float32(math.acos(Point.scalar(p1,p2)))
+        return np.float32(math.acos(Point.scalar(p1, p2)))
 
     @staticmethod
     def between(p1, p2, c):
@@ -95,14 +97,14 @@ class Point:
         assert (isinstance(p2, Point))
         return Point(between(p1.x, p2.x, c), between(p1.y, p2.y, c))
 
-    pass #class Point
+    pass  # class Point
 
 
 MAX_LINE_PT_DISTANCE = np.float32(100)
 
 
 class Line:
-    def __init__(self, pt0 : Point, pt1 : Point):
+    def __init__(self, pt0: Point, pt1: Point):
         self._pts = [copy.copy(pt0), copy.copy(pt1)]
 
     @property
@@ -117,29 +119,29 @@ class Line:
     def length(self):
         return (self._pts[1] - self._pts[0]).length()
 
-    def get_pt(self, i : int):
+    def get_pt(self, i: int):
         return self._pts[i]
 
     def transpose(self):
         pts = [pt.transpose() for pt in self._pts]
         return Line(pts[0], pts[1])
 
-    def rotate(self, pt_base : Point, angle : np.float32):
+    def rotate(self, pt_base: Point, angle: np.float32):
         pts = [pt.rotate(pt_base, angle) for pt in self._pts]
         return Line(pts[0], pts[1])
 
     def get_vert_dist(self, x, y):
-        pts = (self.pt0,self.pt1)
-        minPt = min(pts, key=lambda x:x.x)
-        maxPt = max(pts, key=lambda x:x.x)
-        if x < minPt.x:
-            return False, (Point(x,y) - minPt).length()
-        elif x > maxPt.x:
-            return False, (Point(x,y) - maxPt).length()
+        pts = (self.pt0, self.pt1)
+        min_pt = min(pts, key=lambda val: val.x)
+        max_pt = max(pts, key=lambda val: val.x)
+        if x < min_pt.x:
+            return False, (Point(x, y) - min_pt).length()
+        elif x > max_pt.x:
+            return False, (Point(x, y) - max_pt).length()
 
         if self.pt0.x == self.pt1.x:
-            ys = (self.pt0.y,self.pt1.y)
-            if y >= min(ys) and y <= max(ys):
+            ys = (self.pt0.y, self.pt1.y)
+            if (y >= min(ys)) and (y <= max(ys)):
                 return True, np.float32(0.0)
             else:
                 return True, np.float32(min((math.fabs(self.pt0.y - y), math.fabs(self.pt1.y - y))))
@@ -169,25 +171,25 @@ class Line:
 
     def y_inside(self, y):
         if self.pt0.y <= self.pt1.y:
-            return y >= self.pt0.y and y <= self.pt1.y
+            return (y >= self.pt0.y) and (y <= self.pt1.y)
         else:
-            return y >= self.pt1.y and y <= self.pt0.y
+            return (y >= self.pt1.y) and (y <= self.pt0.y)
 
     def x_inside(self, x):
         if self.pt0.x <= self.pt1.x:
-            return x >= self.pt0.x and x <= self.pt1.x
+            return (x >= self.pt0.x) and (x <= self.pt1.x)
         else:
-            return x >= self.pt1.x and x <= self.pt0.x
+            return (x >= self.pt1.x) and (x <= self.pt0.x)
 
     @staticmethod
-    def distance_line_line_old(pt_base : Point, angle, l1, l2):
+    def distance_line_line_old(pt_base: Point, angle, l1, l2):
         assert(isinstance(l1, Line))
         assert(isinstance(l2, Line))
         angle = np.float32(angle)
-        l = [l1.rotate(pt_base, -angle),l2.rotate(pt_base, -angle)]
+        l = [l1.rotate(pt_base, -angle), l2.rotate(pt_base, -angle)]
         l = [li.transpose() for li in l]
         x = [(l[0].pt0, 0, 0), (l[0].pt1, 0, 1), (l[1].pt0, 1, 0), (l[1].pt1, 1, 1)]
-        x = sorted(x, key=lambda x:x[0].x)
+        x = sorted(x, key=lambda val: val[0].x)
         if x[0][1] == x[1][1]:
             return False, (l[x[1][1]].get_pt(x[1][2]) - l[x[2][1]].get_pt(x[2][2])).length()
         else:
@@ -195,13 +197,12 @@ class Line:
             d2 = l[1 if x[2][1] == 0 else 0].get_vert_dist(x[2][0].x, x[2][0].y)
             if d1[1]*(-1 if x[1][1] == 0 else 1)*d2[1]*(-1 if x[2][1] == 0 else 1) <= np.float32(0.0):
                 return True, np.float32(0.0)
-            dists = [d1,d2]
-            dists = [(b,np.float32(math.fabs(v))) for b,v in dists]
-            return min(dists, key=lambda x:x[1])
-        return True, 0
+            dists = [d1, d2]
+            dists = [(b, np.float32(math.fabs(v))) for b, v in dists]
+            return min(dists, key=lambda val: val[1])
 
     @staticmethod
-    def distance_line_line(pt_base : Point, angle, l1, l2):
+    def distance_line_line(pt_base: Point, angle, l1, l2):
         assert(isinstance(l1, Line))
         assert(isinstance(l2, Line))
         angle = np.float32(angle)
@@ -221,22 +222,23 @@ class Line:
         return is_intersect, 0
 
     @staticmethod
-    def distance_line_pt_old(pt_base : Point, angle, l, pt : Point):
+    def distance_line_pt_old(pt_base: Point, angle, l, pt: Point):
         assert(isinstance(l, Line))
         angle = np.float32(angle)
         l = l.rotate(pt_base, -angle)
         p = pt.rotate(pt_base, -angle)
         l = l.transpose()
         p = p.transpose()
-        b,v = l.get_vert_dist(p.x, p.y)
-        return b and v >=0, v
+        b, v = l.get_vert_dist(p.x, p.y)
+        return b and (v >=0), v
 
     @staticmethod
-    def distance_line_pt(pt_base : Point, angle, l, pt : Point):
+    def distance_line_pt(pt_base: Point, angle, l, pt: Point):
         assert(isinstance(l, Line))
         angle = np.float32(angle)
         assert(pt_base is pt)
-        l1 = Line(pt, pt + Point.vector_from_angle(angle,MAX_LINE_PT_DISTANCE))
+        l1 = Line(pt, pt + Point.vector_from_angle(angle, MAX_LINE_PT_DISTANCE))
+        pt_intersect = pt
         if np.isclose(l.pt0.x, l.pt1.x):
             is_intersect = l1.x_inside(l.pt0.x)
             if is_intersect:
@@ -251,7 +253,7 @@ class Line:
             return Line.distance_line_pt_old(pt_base, angle, l, pt)
         return is_intersect, (pt_intersect - pt).length() if is_intersect else MAX_LINE_PT_DISTANCE
 
-    pass #class Line
+    pass  # class Line
 
 
 @froze_class
@@ -262,15 +264,14 @@ class Size:
     """
 
     def __init__(self, *, cx = None, cy = None, sz = None):
-        assert(((cx is not None) and (cy is not None))
-            or (sz is not None))
-        if ((cx is not None) and (cy is not None)):
+        assert(((cx is not None) and (cy is not None)) or (sz is not None))
+        if (cx is not None) and (cy is not None):
             self.cx = np.float32(cx)
             self.cy = np.float32(cy)
-        elif (sz is not None) and isinstance(sz,Size):
+        elif (sz is not None) and isinstance(sz, Size):
             self.cx = sz.cx
             self.cy = sz.cy
-        elif (sz is not None) and isinstance(sz,Point):
+        elif (sz is not None) and isinstance(sz, Point):
             self.cx = sz.x
             self.cy = sz.y
         if self.is_empty():
@@ -282,7 +283,7 @@ class Size:
             and self.cy == np.float32(other.cy)
 
     def __add__(self, other):
-        sz = Size(cx = self.cx, cy = self.cy)
+        sz = Size(cx=self.cx, cy=self.cy)
         if isinstance(other, Size):
             sz.cx += np.float32(other.cx)
             sz.cy += np.float32(other.cy)
@@ -292,7 +293,7 @@ class Size:
         return sz
 
     def __sub__(self, other):
-        sz = Size(cx = self.cx, cy = self.cy)
+        sz = Size(cx=self.cx, cy=self.cy)
         if isinstance(other, Size):
             sz.cx -= np.float32(other.cx)
             sz.cy -= np.float32(other.cy)
@@ -302,7 +303,7 @@ class Size:
         return sz
 
     def __mul__(self, other):
-        sz = Size(cx = self.cx, cy = self.cy)
+        sz = Size(cx=self.cx, cy=self.cy)
         c = np.float32(other)
         sz.cx *= c
         sz.cy *= c
@@ -314,7 +315,7 @@ class Size:
         """
         return (self.cx <= 0) or (self.cy <= 0)
 
-    pass #class Size
+    pass  # class Size
 
 
 @froze_class
@@ -325,17 +326,17 @@ class Rect:
     """
 
     def __init__(self, *,
-            x = None, y = None, w = None, h = None, sz : Size = None,
-            top_left : Point = None, bottom_right : Point = None
+            x=None, y=None, w=None, h=None, sz: Size=None,
+            top_left: Point=None, bottom_right: Point=None
             ):
         assert(((x is not None) and (y is not None) and (((w is not None) and (h is not None)) or (sz is not None)))
             or ((top_left is not None) and (bottom_right is not None)))
         if (x is not None) and (y is not None) and (((w is not None) and (h is not None)) or (sz is not None)):
-            self._tl = Point(x = x,y = y)
+            self._tl = Point(x=x, y=y)
             if sz is not None:
                 self._sz = sz
             elif (w is not None) and (h is not None):
-                self._sz = Size(cx = w, cy = h)
+                self._sz = Size(cx=w, cy=h)
         elif (top_left is not None) and (bottom_right is not None):
             self._tl = top_left
             self._sz = Size(sz=bottom_right-top_left)
@@ -404,7 +405,7 @@ class Rect:
 
     @w.setter
     def w(self, w):
-        self._sz = Size(cx=np.float32(w),cy=self._sz.cy)
+        self._sz = Size(cx=np.float32(w), cy=self._sz.cy)
 
     @property
     def h(self):
@@ -412,14 +413,14 @@ class Rect:
 
     @h.setter
     def h(self, h):
-        self._sz = Size(cx=self._sz.cx,cy=np.float32(h))
+        self._sz = Size(cx=self._sz.cx, cy=np.float32(h))
 
     @property
     def top_left(self):
         return copy.copy(self._tl)
 
     @top_left.setter
-    def top_left(self, top_left : Point):
+    def top_left(self, top_left: Point):
         self._tl = copy.copy(top_left)
 
     @property
@@ -429,7 +430,7 @@ class Rect:
         return pt
 
     @top_right.setter
-    def top_right(self, top_right : Point):
+    def top_right(self, top_right: Point):
         self._tl.y = top_right.y
         self._sz = Size(cx=top_right.x-self._tl.x, cy=self._sz.cy)
 
@@ -440,7 +441,7 @@ class Rect:
         return pt
 
     @bottom_left.setter
-    def bottom_left(self, bottom_left : Point):
+    def bottom_left(self, bottom_left: Point):
         self._tl.x = bottom_left.x
         self._sz = Size(cx=self._sz.cx, cy=bottom_left.y-self._tl.y)
 
@@ -451,7 +452,7 @@ class Rect:
         return pt
 
     @bottom_right.setter
-    def bottom_right(self, bottom_right : Point):
+    def bottom_right(self, bottom_right: Point):
         sz = bottom_right - self._tl
         self._sz = Size(sz=sz)
 
@@ -460,7 +461,7 @@ class Rect:
         return copy.copy(self._sz)
 
     @size.setter
-    def size(self, size : Size):
+    def size(self, size: Size):
         self._sz = size
 
     def union(self, rc):
@@ -485,7 +486,7 @@ class Rect:
         b = min((self.bottom, rc.bottom))
         return Rect(top_left=Point(l, t), bottom_right=Point(r, b))
 
-    pass #class Rect
+    pass  # class Rect
 
 
 def normal_distribution_density(x, mean, deviation):
@@ -493,11 +494,9 @@ def normal_distribution_density(x, mean, deviation):
     return np.float32(math.exp(-math.pow(x-mean,2.0)/d2)/math.pow(math.pi*d2, 0.5))
 
 
-def angle_diff(a1,a2):
+def angle_diff(a1, a2):
     p1 = Point.vector_from_angle(a1, 1.0)
     p2 = Point.vector_from_angle(a2, 1.0)
     v = p1.x*p2.x + p1.y*p2.y
     v = np.clip(v, np.float32(-1.0), np.float32(1.0))
     return np.arccos(v)
-
-

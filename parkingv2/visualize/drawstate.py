@@ -1,5 +1,5 @@
 from RLParking.db import TrainState, TrainStates
-import RLParking.settings as settings
+from RLParking.settings import settings
 
 import matplotlib.pyplot as plt
 
@@ -9,7 +9,7 @@ def plot_state(ts: TrainState):
     p2 = ts.next_state.pos
     x = [p1.x, p2.x]
     y = [p1.y, p2.y]
-    plt.plot(x,y, color="red" if ts.has_values() else "black")
+    plt.plot(x, y, color="red" if ts.has_values() else "black")
 
 
 def main():

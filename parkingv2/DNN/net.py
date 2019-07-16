@@ -1,4 +1,4 @@
-import RLParking.settings as settings
+from RLParking.settings import settings
 
 import tensorflow as tf
 import numpy as np
@@ -9,7 +9,7 @@ class NetData:
         self.x = batch
         self.y = None
 
-    pass # class NetData
+    pass  # class NetData
 
 
 class NetTrainData(NetData):
@@ -17,7 +17,7 @@ class NetTrainData(NetData):
         super(NetTrainData, self).__init__(batch_x)
         self.y = batch_y
 
-    pass # class NetTrainData
+    pass  # class NetTrainData
 
 
 class OperationLayer(tf.layers.Layer):
@@ -29,15 +29,17 @@ class OperationLayer(tf.layers.Layer):
         self._items_count = items_count
         self._item_sz = item_sz
         self._extra_sz = extra_sz
+        self._expand_op = None
+        self._op_base = None
         super(OperationLayer, self).__init__(**kwargs)
         return
 
     def build(self, input_shape):
-        a = np.zeros((self._items_count,),dtype=np.float32)
+        a = np.zeros((self._items_count,), dtype=np.float32)
         a[:] = np.float32(0.5)
         e = np.zeros((self._items_count, self._items_count*self._item_sz), dtype=np.float32)
         for i in range(self._items_count):
-            e[i,i*self._item_sz:(i+1)*self._item_sz] = np.float32(1.0)
+            e[i, i*self._item_sz:(i+1)*self._item_sz] = np.float32(1.0)
         self._expand_op = tf.constant(e)
         self._op_base = tf.constant(a)
         super(OperationLayer, self).build(input_shape)
@@ -54,16 +56,16 @@ class OperationLayer(tf.layers.Layer):
         if self._extra_sz > 0:
             i1 = tf.slice(inputs, [0, 0], [-1, self._items_count * self._item_sz])
             i2 = tf.slice(inputs,
-                [0, self._items_count * self._item_sz]
-                , [-1, self._extra_sz]
-                )
+                          [0, self._items_count * self._item_sz],
+                          [-1, self._extra_sz]
+                          )
             op = tf.add(op, self._op_base)
             op1 = tf.matmul(op, self._expand_op)
-            return tf.concat([tf.multiply(i1,op1),i2],1)
+            return tf.concat([tf.multiply(i1, op1), i2], 1)
         else:
             op = tf.add(op, self._op_base)
             op1 = tf.matmul(op, self._expand_op)
-            return tf.multiply(inputs,op1)
+            return tf.multiply(inputs, op1)
 
     def compute_output_shape(self, input_shape):
         """
@@ -95,7 +97,8 @@ class OperationLayer(tf.layers.Layer):
         """
         return cls(**config)
 
-    pass #class OperationLayer
+    pass  # class OperationLayer
+
 
 class RLModel(tf.keras.Model):
     """
@@ -105,7 +108,7 @@ class RLModel(tf.keras.Model):
         super(RLModel, self).__init__(name="parking_model")
         self._input_size = settings.NET_INPUT_SIZE
         self._op_count = settings.OPERATIONS_COUNT
-        assert(settings.NET_OPERATION_EXTRA_SIZE>=0)
+        assert(settings.NET_OPERATION_EXTRA_SIZE >= 0)
         self._layers1 = list()
         self._layers1.append(tf.layers.Dense(settings.NET1_FC_SIZE1, activation=settings.NET_LAYER1_ACTIVATION))
         self._layers1.append(tf.layers.Dense(settings.NET1_FC_SIZE1, activation=settings.NET_LAYER1_ACTIVATION))
@@ -131,13 +134,8 @@ class RLModel(tf.keras.Model):
         pass
 
     def call(self, inputs):
-        x = tf.slice(inputs, [0, 0],
-            [-1, self._input_size - self._op_count]
-        )
-        op = tf.slice(inputs,
-            [0, self._input_size - self._op_count],
-            [-1, self._op_count]
-        )
+        x = tf.slice(inputs, [0, 0], [-1, self._input_size - self._op_count])
+        op = tf.slice(inputs, [0, self._input_size - self._op_count], [-1, self._op_count])
         x = tf.reshape(x, [-1, self._input_size - self._op_count])
         for l in self._layers1:
             x = l(x)
@@ -162,4 +160,4 @@ class RLModel(tf.keras.Model):
     def layers_p2(self):
         return self._layers2
 
-    pass #RLModel
+    pass  # RLModel

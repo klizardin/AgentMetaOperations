@@ -1,7 +1,7 @@
 from env.vehicle import Vehicle, StaticEnv, VehicleOp
 from RLParking.db import StartCoordinates
 from geom.primitives import Point, Line, Rect, between
-import RLParking.settings as settings
+from RLParking.settings import settings
 
 import pygame
 import numpy as np
@@ -9,13 +9,13 @@ import math
 
 
 class KeyInfo:
-    def __init__(self, key, cmd = None, *, pos = 0, value = None):
+    def __init__(self, key, cmd=None, *, pos=0, value=None):
         self.key = key
         self.cmd = cmd
         self.pos = pos
         self.value = value
 
-    pass #class KeyInfo
+    pass  # class KeyInfo
 
 
 class GUITestVehicle:
@@ -43,8 +43,8 @@ class GUITestVehicle:
             KeyInfo(pygame.K_b, VehicleOp.ROTATE_RIGHT_1),
             KeyInfo(pygame.K_n, VehicleOp.ROTATE_RIGHT_2),
 
-            #KeyInfo(pygame.K_q, VehicleOp.FORWARD),
-            #KeyInfo(pygame.K_a, VehicleOp.BACKWARD),
+            # KeyInfo(pygame.K_q, VehicleOp.FORWARD),
+            # KeyInfo(pygame.K_a, VehicleOp.BACKWARD),
 
             KeyInfo(pygame.K_i, pos=1, value=True),
 
@@ -53,7 +53,6 @@ class GUITestVehicle:
         self._old_keys = [0] * len(self.KEYS)
         self._start_coordinates = StartCoordinates()
         self._initialize()
-
 
     def _initialize(self):
         sc = self._start_coordinates.get_rand()[0]
@@ -66,12 +65,12 @@ class GUITestVehicle:
     def _c(self, pt, c):
         return Point(pt.x*c.x, -pt.y*c.y) + self.SCREEN_CENTER
 
-    def _draw_line(self, line: Line, coefs, color = (128, 128, 128)):
+    def _draw_line(self, line: Line, coefs, color=(128, 128, 128)):
         pt0 = self._c(line.pt0, coefs)
         pt1 = self._c(line.pt1, coefs)
         pygame.draw.line(self._screen, color, (pt0.x, pt0.y), (pt1.x, pt1.y))
 
-    def _draw_rect(self, rc: Rect, coefs, color = (128,128,128)):
+    def _draw_rect(self, rc: Rect, coefs, color=(128, 128, 128)):
         pt0 = self._c(rc.top_left, coefs)
         pt1 = self._c(rc.bottom_right, coefs)
         pygame.draw.rect(self._screen, color, (pt0.x, pt0.y, pt1.x-pt0.x, pt1.y-pt0.y))
@@ -80,29 +79,24 @@ class GUITestVehicle:
     def _draw_input(self, coefs):
         inputs = self._vehicle.get_input(self._env)
         input_coefs = self._vehicle.get_input_coefs(self._env)
-        for i,(l,c) in enumerate(zip(inputs[0], input_coefs[0])):
+        for i, (l, c) in enumerate(zip(inputs[0], input_coefs[0])):
             self._draw_line(l, coefs)
             x1 = between(settings.INPUT_SHOW_RECT.left, settings.INPUT_SHOW_RECT.right, i / len(inputs[0]))
             x2 = between(settings.INPUT_SHOW_RECT.left, settings.INPUT_SHOW_RECT.right, (i+1) / len(inputs[0]))
             y = between(settings.INPUT_SHOW_RECT.top, settings.INPUT_SHOW_RECT.bottom, c + 0.5)
-            rc = Rect(
-                top_left=Point(x1, settings.INPUT_SHOW_RECT.top)
-                , bottom_right=Point(x2,y)
-            )
+            rc = Rect(top_left=Point(x1, settings.INPUT_SHOW_RECT.top), bottom_right=Point(x2, y))
             self._draw_rect(rc, coefs)
         if settings.VISUALIZE_INPUT_HISTORY:
-            for shift,inp_coefs in enumerate(input_coefs):
+            for shift, inp_coefs in enumerate(input_coefs):
                 xshift = shift*4/coefs.x
                 for i, c in enumerate(inp_coefs):
-                    x1 = between(settings.INPUT_SHOW_RECT.left, settings.INPUT_SHOW_RECT.right, i / len(inp_coefs)) + xshift
+                    x1 = between(settings.INPUT_SHOW_RECT.left, settings.INPUT_SHOW_RECT.right,
+                                 i / len(inp_coefs)) + xshift
                     x2 = x1 + 4/coefs.x
                     y = between(settings.INPUT_SHOW_RECT.top, settings.INPUT_SHOW_RECT.bottom, c + 0.5)
-                    rc = Rect(
-                        top_left=Point(x1, settings.INPUT_SHOW_RECT.top)
-                        , bottom_right=Point(x2,y)
-                    )
+                    rc = Rect(top_left=Point(x1, settings.INPUT_SHOW_RECT.top), bottom_right=Point(x2, y))
                     clr = 127*shift/4 + 128
-                    self._draw_rect(rc, coefs, color=(clr,clr,clr))
+                    self._draw_rect(rc, coefs, color=(clr, clr, clr))
 
     def _draw_dist_ltl(self, coefs):
         all_lines = self._env.get_lines()
@@ -114,9 +108,9 @@ class GUITestVehicle:
         dist = [Line.distance_line_line(pt0, angle, l1, l) for l in all_lines]
         dist = [d[1] for d in dist if d[0]]
         dist.append(np.float32(30))
-        len = min(dist)
-        pt1 = Point.vector_from_angle(angle, len) + pt0
-        l2 = Line(pt0,pt1)
+        length = min(dist)
+        pt1 = Point.vector_from_angle(angle, length) + pt0
+        l2 = Line(pt0, pt1)
         self._draw_line(l1, coefs, color=(0, 128, 0))
         self._draw_line(l2, coefs, color=(0, 0, 128))
 
@@ -134,8 +128,7 @@ class GUITestVehicle:
     def _draw_weights(self, coefs):
         for pos, w in self._start_coordinates.get_pos_with_weights():
             c1 = int((127+64) * w) + (128-64)
-            self._draw_line(Line(pos, pos), coefs, (c1,c1,c1))
-        pass
+            self._draw_line(Line(pos, pos), coefs, (c1, c1, c1))
 
     def _get_lines(self):
         return self._env.get_lines()
@@ -149,16 +142,16 @@ class GUITestVehicle:
             self._draw_line(l, coefs)
 
         self._draw_input(coefs)
-        #self._draw_dist_ltl(coefs)
+        # self._draw_dist_ltl(coefs)
         self._draw_target(coefs)
 
         bounds = self._vehicle.get_bounds()
         axles = self._vehicle.get_axles()
         front_wheels = self._vehicle.get_front_wheels()
-        pt0 = self._c(bounds[-1],coefs)
+        pt0 = self._c(bounds[-1], coefs)
         for pt in bounds:
             pt1 = self._c(pt, coefs)
-            pygame.draw.line(self._screen, (128,128,128), (pt0.x,pt0.y), (pt1.x, pt1.y))
+            pygame.draw.line(self._screen, (128, 128, 128), (pt0.x, pt0.y), (pt1.x, pt1.y))
             pt0 = pt1
         axles = [self._c(pt, coefs) for pt in axles]
         front_wheels = [self._c(pt, coefs) for pt in front_wheels]
@@ -171,13 +164,11 @@ class GUITestVehicle:
             (front_wheels[2].x, front_wheels[2].y),
             (front_wheels[3].x, front_wheels[3].y))
 
-
-
     def _check_key(self, pressed):
         self._new_keys = [0] * len(self.KEYS)
         for i, k in enumerate(self.KEYS):
             self._new_keys[i] = 1 if pressed[k.key] else 0
-        res = [None] * (max(self.KEYS, key=lambda x : x.pos).pos + 1)
+        res = [list()] * (max(self.KEYS, key=lambda x: x.pos).pos + 1)
         res[0] = list()
         for i, k in enumerate(self.KEYS):
             if self._new_keys[i] != 0 and self._old_keys[i] == 0:
@@ -223,11 +214,11 @@ class GUITestVehicle:
             pygame.display.flip()
             self._clock.tick(30)
 
-    pass #class GUITestVehicle
+    pass  # class GUITestVehicle
 
 
 def main():
-    #print("{0} -- {1}".format(PATHES.get_temp(),PATHES.is_temp_exist()))
+    # print("{0} -- {1}".format(PATHES.get_temp(),PATHES.is_temp_exist()))
     gui_vehicle = GUITestVehicle()
     gui_vehicle.run()
 

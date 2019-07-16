@@ -1,7 +1,7 @@
 from RLParking.request import RequestType, Request
 from RLParking.db import TrainState, TrainStates
 from env.vehicle import Vehicle, StaticEnv
-import RLParking.settings as settings
+from RLParking.settings import settings
 
 from typing import List
 import numpy as np
@@ -19,7 +19,8 @@ class AsyncTrain:
                 _ = yield Request(RequestType.NOP)
                 if len(self._db) >= db_size + settings.GAME_STATES_IN_DB_STEP_SIZE:
                     self._db.print_size()
-                    db_size = (len(self._db) // settings.GAME_STATES_IN_DB_STEP_SIZE) * settings.GAME_STATES_IN_DB_STEP_SIZE
+                    db_size = ((len(self._db) // settings.GAME_STATES_IN_DB_STEP_SIZE)
+                              * settings.GAME_STATES_IN_DB_STEP_SIZE)
 
             vehicle = Vehicle("TrainVehicle")
             while True:
@@ -28,7 +29,8 @@ class AsyncTrain:
                 # output db size
                 if len(self._db) >= db_size + settings.GAME_STATES_IN_DB_STEP_SIZE:
                     self._db.print_size()
-                    db_size = (len(self._db) // settings.GAME_STATES_IN_DB_STEP_SIZE) * settings.GAME_STATES_IN_DB_STEP_SIZE
+                    db_size = ((len(self._db) // settings.GAME_STATES_IN_DB_STEP_SIZE)
+                               * settings.GAME_STATES_IN_DB_STEP_SIZE)
                 # check states db size
                 if len(self._db) > settings.GAME_STATES_IN_DB_SIZE_MAX2:
                     self._db.reduce_size()
@@ -47,12 +49,12 @@ class AsyncTrain:
             sensor_inputs = vehicle.get_sensor_inputs()
             state_inputs = np.concatenate((state_inputs.flatten(), sensor_inputs))
             inputs.append(state_inputs)
-            #ops.append(train_state.state.get_last_commands())
+            # ops.append(train_state.state.get_last_commands())
             ops.append(vehicle.get_last_operation_info())
         return inputs, ops
 
     def _prepare_values(self, states: List[TrainState], vehicle: Vehicle):
-        values = np.zeros((len(states),),dtype=np.float32)
+        values = np.zeros((len(states),), dtype=np.float32)
         for i,train_state in enumerate(states):
             if train_state.final_state:
                 values[i] = train_state.reward
@@ -65,9 +67,9 @@ class AsyncTrain:
                 sensor_inputs = vehicle.get_sensor_inputs()
                 inputs = np.concatenate((inputs.flatten(), sensor_inputs))
                 request = yield Request(
-                    type = RequestType.GET_BEST_OPERATION,
-                    inputs = inputs,
-                    ops = ops_inputs
+                    type=RequestType.GET_BEST_OPERATION,
+                    inputs=inputs,
+                    ops=ops_inputs
                 )
                 values[i] = (
                     request.get_best_operation_value()*settings.VALUES_TO_REWARD_COEF*settings.RL_RO_COEF
@@ -114,4 +116,4 @@ class AsyncTrain:
                 values=values
             )
 
-    pass # class AsyncTrain
+    pass  # class AsyncTrain

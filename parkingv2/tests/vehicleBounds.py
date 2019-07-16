@@ -1,9 +1,8 @@
 from env.vehicle import Vehicle
-import RLParking.settings as settings
+from RLParking.settings import settings
 
 import numpy as np
 import matplotlib.pyplot as plt
-import math
 
 
 def main():

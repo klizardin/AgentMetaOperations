@@ -6,10 +6,10 @@ import math
 
 
 class GeomTestCase(unittest.TestCase):
-    #type tests to support needed numpy arrays types
+    # type tests to support needed numpy arrays types
     def test_pt_types(self):
         pts = [
-            Point(x=1,y=2),
+            Point(x=1, y=2),
             Point(x=1.1, y=2.2),
             Point(x=np.float64(1.1), y=np.float64(2.2))
         ]
@@ -34,7 +34,7 @@ class GeomTestCase(unittest.TestCase):
             Rect(x=1.1, y=2.2, w=3.3, h=4.4),
             Rect(x=np.float64(1.1), y=np.float64(2.2), w=np.float64(3.3), h=np.float64(4.4)),
             Rect(x=1.1, y=2.2, sz=Size(cx=1.1, cy=2.2)),
-            Rect(top_left=Point(1.1,2.2), bottom_right=Point(2.2,3.2)),
+            Rect(top_left=Point(1.1, 2.2), bottom_right=Point(2.2, 3.2)),
         ]
         for rc in rects:
             self.assertTrue(isinstance(rc.x, np.float32))
@@ -52,11 +52,11 @@ class GeomTestCase(unittest.TestCase):
             self.assertTrue(isinstance(rc.size, Size))
 
     def test_pt_base_ops(self):
-        x1,y1,x2,y2,c = np.random.rand(5)
+        x1, y1, x2, y2, c = np.random.rand(5)
         delta = 1e-6
-        p1 = Point(x1,y1)
-        p0 = p2 = Point(x2,y2)
-        res = Point(x1+x2,y1+y2)
+        p1 = Point(x1, y1)
+        p0 = p2 = Point(x2, y2)
+        res = Point(x1+x2, y1+y2)
         self.assertAlmostEqual((p1 + p2).x, res.x, delta=delta)
         self.assertAlmostEqual((p1 + p2).y, res.y, delta=delta)
         p2 += p1
@@ -68,30 +68,29 @@ class GeomTestCase(unittest.TestCase):
         p2 -= p1
         self.assertAlmostEqual(p2.x, p0.x, delta=delta)
         self.assertAlmostEqual(p2.y, p0.y, delta=delta)
-        res2 = Point(x1*c,y1*c)
+        res2 = Point(x1*c, y1*c)
         self.assertAlmostEqual((p1 * c).x, res2.x, delta=delta)
         self.assertAlmostEqual((p1 * c).y, res2.y, delta=delta)
         p1 *= c
         self.assertAlmostEqual(p1.x, res2.x, delta=delta)
         self.assertAlmostEqual(p1.y, res2.y, delta=delta)
-        l = math.sqrt(p1.x*p1.x + p1.y*p1.y)
-        self.assertAlmostEqual(p1.length(), np.float32(l), delta=delta)
-        p1 = Point.vector_from_angle(0,1.0)
-        p2 = Point.vector_from_angle(math.pi*0.5,1.0)
+        length = math.sqrt(p1.x*p1.x + p1.y*p1.y)
+        self.assertAlmostEqual(p1.length(), np.float32(length), delta=delta)
+        p1 = Point.vector_from_angle(0, 1.0)
+        p2 = Point.vector_from_angle(math.pi*0.5, 1.0)
         a1 = Point.scalar_angle(p1, p2)
         self.assertAlmostEqual(a1, math.pi*0.5, delta=delta)
-        p1 = Point.vector_from_angle(math.pi*0.1,1.0)
-        p2 = Point.vector_from_angle(math.pi*0.4,1.0)
+        p1 = Point.vector_from_angle(math.pi*0.1, 1.0)
+        p2 = Point.vector_from_angle(math.pi*0.4, 1.0)
         a1 = Point.scalar_angle(p1, p2)
         self.assertAlmostEqual(a1, math.pi*0.3, delta=delta)
 
-
     def test_sz_base_ops(self):
-        x1,y1,x2,y2,c = np.random.rand(5)
+        x1, y1, x2, y2, c = np.random.rand(5)
         delta = 1e-6
-        sz1 = Size(cx=x1,cy=y1)
-        sz0 = sz2 = Size(cx=x2,cy=y2)
-        res = Size(cx=x1+x2,cy=y1+y2)
+        sz1 = Size(cx=x1, cy=y1)
+        sz0 = sz2 = Size(cx=x2, cy=y2)
+        res = Size(cx=x1+x2, cy=y1+y2)
         self.assertAlmostEqual((sz1 + sz2).cx, res.cx, delta=delta)
         self.assertAlmostEqual((sz1 + sz2).cy, res.cy, delta=delta)
         sz2 += sz1
@@ -127,7 +126,7 @@ class GeomTestCase(unittest.TestCase):
         ]
         for rc in rects:
             self.assertTrue(rc.is_empty())
-            self.assertEqual(rc.size, Size(cx=0,cy=0))
+            self.assertEqual(rc.size, Size(cx=0, cy=0))
 
     def test_rc_properties(self):
         rects = [
@@ -136,7 +135,7 @@ class GeomTestCase(unittest.TestCase):
             Rect(top_left=Point(2, 2), bottom_right=Point(5, 5)),
         ]
         for rc in rects:
-            dl,dt,dr,db = np.float32(np.random.rand(4))
+            dl, dt, dr, db = np.float32(np.random.rand(4))
             x = rc.x
             rc.x = x - dl
             self.assertEqual(rc.x, x - dl)
@@ -180,35 +179,35 @@ class GeomTestCase(unittest.TestCase):
             self.assertEqual(rc.bottom, b)
 
             tl = rc.top_left
-            rc.top_left = tl - Point(dl,dt)
-            self.assertEqual(rc.top_left, tl - Point(dl,dt))
+            rc.top_left = tl - Point(dl, dt)
+            self.assertEqual(rc.top_left, tl - Point(dl, dt))
             rc.top_left = tl
             self.assertEqual(rc.top_left, tl)
-            tl += Point(dl,dt)
+            tl += Point(dl, dt)
             self.assertNotEqual(rc.top_left, tl)
 
             tr = rc.top_right
-            rc.top_right = tr - Point(dr,dt)
-            self.assertEqual(rc.top_right, tr - Point(dr,dt))
+            rc.top_right = tr - Point(dr, dt)
+            self.assertEqual(rc.top_right, tr - Point(dr, dt))
             rc.top_right = tr
             self.assertEqual(rc.top_right, tr)
-            tr += Point(dr,dt)
+            tr += Point(dr, dt)
             self.assertNotEqual(rc.top_right, tr)
 
             bl = rc.bottom_left
-            rc.bottom_left = bl - Point(dl,db)
-            self.assertEqual(rc.bottom_left, bl - Point(dl,db))
+            rc.bottom_left = bl - Point(dl, db)
+            self.assertEqual(rc.bottom_left, bl - Point(dl, db))
             rc.bottom_left = bl
             self.assertEqual(rc.bottom_left, bl)
-            bl += Point(dl,dt)
+            bl += Point(dl, dt)
             self.assertNotEqual(rc.bottom_left, bl)
 
             br = rc.bottom_right
-            rc.bottom_right = br - Point(dr,db)
-            self.assertEqual(rc.bottom_right, br - Point(dr,db))
+            rc.bottom_right = br - Point(dr, db)
+            self.assertEqual(rc.bottom_right, br - Point(dr, db))
             rc.bottom_right = br
             self.assertEqual(rc.bottom_right, br)
-            br += Point(dr,db)
+            br += Point(dr, db)
             self.assertNotEqual(rc.bottom_right, br)
 
             sz = rc.size
@@ -220,12 +219,13 @@ class GeomTestCase(unittest.TestCase):
             self.assertNotEqual(rc.size, sz)
 
     def test_rect_union_op(self):
-        rc1 = Rect(top_left=Point(1,1), bottom_right=Point(3,3))
-        rc2 = Rect(top_left=Point(2,2), bottom_right=Point(4,4))
-        rcU = Rect(top_left=Point(1,1), bottom_right=Point(4,4))
-        rcI = Rect(top_left=Point(2,2), bottom_right=Point(3,3))
-        self.assertEqual(rc1.union(rc2), rcU)
-        self.assertEqual(rc1.intersect(rc2), rcI)
+        rc1 = Rect(top_left=Point(1, 1), bottom_right=Point(3, 3))
+        rc2 = Rect(top_left=Point(2, 2), bottom_right=Point(4, 4))
+        rc_u = Rect(top_left=Point(1, 1), bottom_right=Point(4, 4))
+        rc_i = Rect(top_left=Point(2, 2), bottom_right=Point(3, 3))
+        self.assertEqual(rc1.union(rc2), rc_u)
+        self.assertEqual(rc1.intersect(rc2), rc_i)
+
 
 if __name__ == '__main__':
     unittest.main()

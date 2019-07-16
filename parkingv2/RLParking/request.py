@@ -10,19 +10,19 @@ class RequestType(Enum):
     SEARCH_OPERATION = 3
     RL_TRAIN = 4
 
-    pass # class RequestType
+    pass  # class RequestType
 
 
 class Request:
     def __init__(self,
         type: RequestType,
-        inputs = None,
-        ops = None,
-        state = None,
-        next_state = None,
-        reward = None,
-        values = None,
-        final_state = None,
+        inputs=None,
+        ops=None,
+        state=None,
+        next_state=None,
+        reward=None,
+        values=None,
+        final_state=None,
         ):
         self.type = type
         self.inputs = inputs
@@ -52,11 +52,11 @@ class Request:
             assert(self.ops is not None)
             assert(self.values is not None)
 
-    def is_type(self, type : RequestType):
+    def is_type(self, type: RequestType):
         return self.type.value == type.value
 
     def in_types(self, types: List[RequestType]):
-        return any([type.value==self.type.value for type in types])
+        return any([type.value == self.type.value for type in types])
 
     def get_best_operation(self):
         return np.argmax(self.results)
@@ -64,4 +64,4 @@ class Request:
     def get_best_operation_value(self):
         return np.max(self.results)
 
-    pass # class Request
+    pass  # class Request

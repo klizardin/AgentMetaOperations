@@ -1,6 +1,6 @@
 from geom.utils import SingletonDecorator
 from geom.primitives import angle_diff
-import RLParking.settings as settings
+from RLParking.settings import settings
 
 import numpy as np
 import math
@@ -15,7 +15,7 @@ def calc_fail_value(max_fail_value: np.float32, target_distance, target_max_dist
 
 
 def calc_done_value(max_done_value: np.float32, target_distance, target_max_distance):
-    target_distance = min((target_distance,target_max_distance))
+    target_distance = min((target_distance, target_max_distance))
     val = max_done_value \
           * (math.log(target_max_distance - target_distance + 1.0)/math.log(target_max_distance + 1.0)*0.9 + 0.1)
     if math.fabs(val) >= math.fabs(max_done_value):
@@ -46,7 +46,7 @@ def get_reward(old_values, new_values):
         ):
         return calc_fail_value(settings.REINFORCE_FAIL, target_dist, settings.TARGET.TARGET_POINT_MAX_DISTANCE), True
 
-    angle_dist = angle_diff(new_values[settings.REWARD_KEY_ANGLE],settings.TARGET.TARGET_ANGLE)
+    angle_dist = angle_diff(new_values[settings.REWARD_KEY_ANGLE], settings.TARGET.TARGET_ANGLE)
 
     # bound to [0 .. math.pi*0.5]
     angle_dist = np.float32(math.fmod(angle_dist + math.pi, math.pi))
@@ -65,7 +65,7 @@ def get_reward(old_values, new_values):
         settings.TARGET.update_reinforce_distances(target_dist, angle_dist, velocity_dist)
         return calc_done_value(settings.REINFORCE_DONE, target_dist, settings.TARGET.TARGET_POINT_MAX_DISTANCE), True
 
-    return (settings.REINFORCE_NONE, False)
+    return settings.REINFORCE_NONE, False
 
 
 class Reward:
@@ -76,7 +76,7 @@ class Reward:
     def set_values(self, obj_id, values_dict):
         if obj_id not in self._old_values:
             self._old_values[obj_id] = dict()
-        for k,v in values_dict.items():
+        for k, v in values_dict.items():
             self._old_values[obj_id][k] = v
 
     def get_reward(self, obj_id, new_values_dict):
@@ -89,10 +89,7 @@ class Reward:
             ):
             stand_pos = self._old_values[obj_id][settings.REWARD_KEY_STAND_POS]
             stand_time = self._old_values[obj_id][settings.REWARD_KEY_STAND_TIME]
-            if not np.isclose(
-                (stand_pos - new_values_dict[settings.REWARD_KEY_POS]).length()
-                , np.float32(0.0)
-                ):
+            if not np.isclose((stand_pos - new_values_dict[settings.REWARD_KEY_POS]).length(), np.float32(0.0)):
                 stand_pos = None
                 stand_time = None
 
@@ -113,7 +110,8 @@ class Reward:
             stand_pos = self._old_values[obj_id][settings.REWARD_KEY_STAND_POS]
             stand_time = self._old_values[obj_id][settings.REWARD_KEY_STAND_TIME]
         elif np.isclose(
-                (self._old_values[obj_id][settings.REWARD_KEY_POS] - new_values_dict[settings.REWARD_KEY_POS]).length()
+                (self._old_values[obj_id][settings.REWARD_KEY_POS]
+                 - new_values_dict[settings.REWARD_KEY_POS]).length()
                 , np.float32(0.0)
             ):
             stand_pos = self._old_values[obj_id][settings.REWARD_KEY_POS]
@@ -135,7 +133,7 @@ class Reward:
         self._last_id += 1
         return res
 
-    pass # class Reward
+    pass  # class Reward
 
 
 Reward = SingletonDecorator(Reward)
