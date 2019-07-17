@@ -184,115 +184,119 @@ class ResetWeightCoefs:
 
 
 class Settings:
-    VEHICLE = VehicleConsts()
+    def __init__(self):
+        self.VEHICLE = VehicleConsts()
 
-    SCREEN_SIZE = Size(cx=50, cy=50)
-    STATIC_VEHICLES = [
-        (VEHICLE.BOUNDS_RECT, VEHICLE.CENTER_PT, Point(6.5, 5.5), np.float32(math.pi*0.5)),
-        (VEHICLE.BOUNDS_RECT, VEHICLE.CENTER_PT, Point(6.5, -5.5), np.float32(math.pi*0.5)),
-    ]
+        self.SCREEN_SIZE = Size(cx=50, cy=50)
+        self.STATIC_VEHICLES = [
+            (self.VEHICLE.BOUNDS_RECT, self.VEHICLE.CENTER_PT, Point(6.5, 5.5), np.float32(math.pi*0.5)),
+            (self.VEHICLE.BOUNDS_RECT, self.VEHICLE.CENTER_PT, Point(6.5, -5.5), np.float32(math.pi*0.5)),
+        ]
 
-    WALLS = [
-        Line(Point(8, 15), Point(8, -15)),
-        Line(Point(8, 15), Point(-3, 15)),
-        Line(Point(-3, 15), Point(-3, -15)),
-        Line(Point(-3, -15), Point(8, -15)),
-    ]
+        self.WALLS = [
+            Line(Point(8, 15), Point(8, -15)),
+            Line(Point(8, 15), Point(-3, 15)),
+            Line(Point(-3, 15), Point(-3, -15)),
+            Line(Point(-3, -15), Point(8, -15)),
+        ]
 
-    TARGET = Target()  # need to correctly update params
+        self.TARGET = Target()  # need to correctly update params
 
-    VISUALIZE_START_POSITIONS_WEIGHTS = False
-    BASE_POS1_FOR_POS_GENERATOR = Point(-10.0, 15.0)
-    BASE_POS2_FOR_POS_GENERATOR = Point(-10.0, -15.0)
-    MAX_LENGTH_FOR_POS_GENERATOR = 20
-    VERSION = "0.0.1"
+        self.VISUALIZE_START_POSITIONS_WEIGHTS = False
+        self.BASE_POS1_FOR_POS_GENERATOR = Point(-10.0, 15.0)
+        self.BASE_POS2_FOR_POS_GENERATOR = Point(-10.0, -15.0)
+        self.MAX_LENGTH_FOR_POS_GENERATOR = 20
+        self.VERSION = "0.0.1"
 
-    MAX_INPUT_LINE_LENGTH = np.float32(15.0)
-    MIN_INPUT_LINE_LENGTH = np.float32(0.999)
+        self.MAX_INPUT_LINE_LENGTH = np.float32(15.0)
+        self.MIN_INPUT_LINE_LENGTH = np.float32(0.999)
 
-    INPUT_SHOW_RECT = Rect(top_left=Point(-20.0, -24.0), bottom_right=Point(20.0, -19.0))
-    NET_SHOW_RECT = Rect(top_left=Point(-20.0, 19.0), bottom_right=Point(20.0, 24.0))
+        self.INPUT_SHOW_RECT = Rect(top_left=Point(-20.0, -24.0), bottom_right=Point(20.0, -19.0))
+        self.NET_SHOW_RECT = Rect(top_left=Point(-20.0, 19.0), bottom_right=Point(20.0, 24.0))
 
-    VISUALIZE_INPUT_HISTORY = True
-    VEHICLE_STATE_MAX_LENGTH = 16
-    VEHICLE_STATE_INDEXES = [0, 3, 15]
+        self.VISUALIZE_INPUT_HISTORY = True
+        self.VEHICLE_STATE_MAX_LENGTH = 16
+        self.VEHICLE_STATE_INDEXES = [0, 3, 15]
 
-    START_POSITIONS = [
-        Line(Point(4.5, 12), Point(-1.5, 12)),
-        Line(Point(4.5, -12), Point(-1.5, -12)),
-    ]
+        self.START_POSITIONS = [
+            Line(Point(4.5, 12), Point(-1.5, 12)),
+            Line(Point(4.5, -12), Point(-1.5, -12)),
+        ]
 
-    PATHES = Pathes(VERSION)
-    BASE_COORDINATES_COUNT = 10000
+        self.PATHES = Pathes(self.VERSION)
+        self.BASE_COORDINATES_COUNT = 10000
 
-    SENSOR_INPUTS_SIZE = 4 + len(VEHICLE_STATE_INDEXES)*3
+        self.SENSOR_INPUTS_SIZE = 4 + len(self.VEHICLE_STATE_INDEXES)*3
 
-    ANGLE_FOR_INPUT = 30
-    ANGLES_FOR_OPERATIONS = 20
-    ANGLE_FOR_OPERATION_MIN = grad_to_rad(-30.0)
-    ANGLE_FOR_OPERATION_MAX = grad_to_rad(30.0)
-    OPERATIONS_COUNT = ANGLES_FOR_OPERATIONS + 2
-    NET_INPUT_SIZE = int((360//ANGLE_FOR_INPUT)*len(VEHICLE_STATE_INDEXES) + SENSOR_INPUTS_SIZE + OPERATIONS_COUNT)
-    NET1_FC_SIZE1 = 512
-    NET_OPERATION_EXTRA_MIN_SIZE = 128
-    NET_OPERATION_ITEM_SIZE = int((NET1_FC_SIZE1 - NET_OPERATION_EXTRA_MIN_SIZE)//OPERATIONS_COUNT)
-    NET_OPERATION_EXTRA_SIZE = NET1_FC_SIZE1 - NET_OPERATION_ITEM_SIZE*OPERATIONS_COUNT
-    NET1_FC_SIZE2 = 512
-    NET1_FC_SIZE3 = 512
-    NET_LAYER1_ACTIVATION = tf.nn.leaky_relu
-    NET_LAYER2_ACTIVATION = tf.nn.leaky_relu
-    NET1_FC_DROPOUT_VALUE1 = 0.2
-    NET1_FC_DROPOUT_VALUE2 = 0.2
+        self.ANGLE_FOR_INPUT = 30
+        self.ANGLES_FOR_OPERATIONS = 20
+        self.ANGLE_FOR_OPERATION_MIN = grad_to_rad(-30.0)
+        self.ANGLE_FOR_OPERATION_MAX = grad_to_rad(30.0)
+        self.OPERATIONS_COUNT = self.ANGLES_FOR_OPERATIONS + 2
+        self.NET_INPUT_SIZE = int((360//self.ANGLE_FOR_INPUT)*len(self.VEHICLE_STATE_INDEXES)
+                                  + self.SENSOR_INPUTS_SIZE + self.OPERATIONS_COUNT)
+        self.NET1_FC_SIZE1 = 512
+        self.NET_OPERATION_EXTRA_MIN_SIZE = 128
+        self.NET_OPERATION_ITEM_SIZE = int((self.NET1_FC_SIZE1 - self.NET_OPERATION_EXTRA_MIN_SIZE)
+                                           //self.OPERATIONS_COUNT)
+        self.NET_OPERATION_EXTRA_SIZE = self.NET1_FC_SIZE1 - self.NET_OPERATION_ITEM_SIZE\
+                                        *self.OPERATIONS_COUNT
+        self.NET1_FC_SIZE2 = 512
+        self.NET1_FC_SIZE3 = 512
+        self.NET_LAYER1_ACTIVATION = tf.nn.leaky_relu
+        self.NET_LAYER2_ACTIVATION = tf.nn.leaky_relu
+        self.NET1_FC_DROPOUT_VALUE1 = 0.2
+        self.NET1_FC_DROPOUT_VALUE2 = 0.2
 
-    VERBOSE_TRAIN_DB = True
-    VERBOSE_VEHICLE_COMMANDS = False
-    VERBOSE_MAIN_MODEL_SAVE = True
+        self.VERBOSE_TRAIN_DB = True
+        self.VERBOSE_VEHICLE_COMMANDS = False
+        self.VERBOSE_MAIN_MODEL_SAVE = True
 
-    REWARD_KEY_COLLISION = "collision"
-    REWARD_KEY_POS = "pos"
-    REWARD_KEY_STAND_POS = "stand_pos"
-    REWARD_KEY_STAND_TIME = "stand_time"
-    REWARD_KEY_VELOCITY = "velocity"
-    REWARD_KEY_ANGLE = "angle"
-    REWARD_KEY_TIME = "time"
-    REWARD_KEY_DRIVE_TIME = "drive_time"
+        self.REWARD_KEY_COLLISION = "collision"
+        self.REWARD_KEY_POS = "pos"
+        self.REWARD_KEY_STAND_POS = "stand_pos"
+        self.REWARD_KEY_STAND_TIME = "stand_time"
+        self.REWARD_KEY_VELOCITY = "velocity"
+        self.REWARD_KEY_ANGLE = "angle"
+        self.REWARD_KEY_TIME = "time"
+        self.REWARD_KEY_DRIVE_TIME = "drive_time"
 
-    REINFORCE_DONE = np.float32(1.0)
-    REINFORCE_FAIL = np.float32(-1.0)
-    REINFORCE_NONE = np.float32(0.0)
+        self.REINFORCE_DONE = np.float32(1.0)
+        self.REINFORCE_FAIL = np.float32(-1.0)
+        self.REINFORCE_NONE = np.float32(0.0)
 
-    REWARD_TO_VALUES_COEF = np.float32(0.3333333)
-    VALUES_TO_REWARD_COEF = np.float32(1.0/REWARD_TO_VALUES_COEF)
-    RL_RO_COEF = np.float32(0.99)
-    RL_REWARD_COEF = np.float32(0.99)
+        self.REWARD_TO_VALUES_COEF = np.float32(0.3333333)
+        self.VALUES_TO_REWARD_COEF = np.float32(1.0/self.REWARD_TO_VALUES_COEF)
+        self.RL_RO_COEF = np.float32(0.99)
+        self.RL_REWARD_COEF = np.float32(0.99)
 
-    STATES_TO_TRAIN_BATCH_SIZE = 32
-    STATES_TO_TRAIN = STATES_TO_TRAIN_BATCH_SIZE*4
+        self.STATES_TO_TRAIN_BATCH_SIZE = 32
+        self.STATES_TO_TRAIN = self.STATES_TO_TRAIN_BATCH_SIZE*4
 
-    MAIN_MODEL_SAVE_INTERVAL = 60*25
-    VALUE_MORE_THAN_MAX_NET_RESULT = 1e2
+        self.MAIN_MODEL_SAVE_INTERVAL = 60*25
+        self.VALUE_MORE_THAN_MAX_NET_RESULT = 1e2
 
-    RL_SEARCH_COEF = 0.01
-    RL_PRETRAIN_SEARCH_COEF = 0.1
-    RL_SEARCH_USE_ALPHA_ALGORITHM = False
-    USE_LEARNING_BOOST = True
+        self.RL_SEARCH_COEF = 0.01
+        self.RL_PRETRAIN_SEARCH_COEF = 0.1
+        self.RL_SEARCH_USE_ALPHA_ALGORITHM = False
+        self.USE_LEARNING_BOOST = True
 
-    VEHICLE_UI_BOT_STEPS_PER_SECOND = np.float32(3.0)
-    VEHICLE_STEP_DURATION = np.float32(1.0/VEHICLE_UI_BOT_STEPS_PER_SECOND)
-    VEHICLE_MAX_DRIVE_DURATION = np.float32(60.0*2.0)
-    VEHICLE_MAX_STAND_DURATION = np.float32(5)
+        self.VEHICLE_UI_BOT_STEPS_PER_SECOND = np.float32(3.0)
+        self.VEHICLE_STEP_DURATION = np.float32(1.0/self.VEHICLE_UI_BOT_STEPS_PER_SECOND)
+        self.VEHICLE_MAX_DRIVE_DURATION = np.float32(60.0*2.0)
+        self.VEHICLE_MAX_STAND_DURATION = np.float32(5)
 
-    GAME_STATES_IN_DB_SIZE_MAX = 1024*31
-    GAME_STATES_IN_DB_SIZE_MAX2 = 1024*32
-    GAME_STATES_IN_DB_TO_START_TRAIN = 1024*30
-    GAME_STATES_IN_DB_STEP_SIZE = 100
-    GAME_STATES_IN_DB_REWARD_RATIO = np.float32(0.3333333)
-    GAME_STATE_GETTED_MAX_COUNT = 30
+        self.GAME_STATES_IN_DB_SIZE_MAX = 1024*31
+        self.GAME_STATES_IN_DB_SIZE_MAX2 = 1024*32
+        self.GAME_STATES_IN_DB_TO_START_TRAIN = 1024*30
+        self.GAME_STATES_IN_DB_STEP_SIZE = 100
+        self.GAME_STATES_IN_DB_REWARD_RATIO = np.float32(0.3333333)
+        self.GAME_STATE_GETTED_MAX_COUNT = 30
 
-    STATE_LEARN_VALUES_COUNT = 8
-    SET_OPERATION_VALUES_PROB = np.float32(0.1)
+        self.STATE_LEARN_VALUES_COUNT = 8
+        self.SET_OPERATION_VALUES_PROB = np.float32(0.1)
 
-    RESET_WEIGHTS_COEF = ResetWeightCoefs()
+        self.RESET_WEIGHTS_COEF = ResetWeightCoefs()
 
     pass  # class Settings
 

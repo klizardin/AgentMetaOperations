@@ -168,7 +168,7 @@ class GUITestVehicle:
         self._new_keys = [0] * len(self.KEYS)
         for i, k in enumerate(self.KEYS):
             self._new_keys[i] = 1 if pressed[k.key] else 0
-        res = [list()] * (max(self.KEYS, key=lambda x: x.pos).pos + 1)
+        res = [None] * (max(self.KEYS, key=lambda x: x.pos).pos + 1)
         res[0] = list()
         for i, k in enumerate(self.KEYS):
             if self._new_keys[i] != 0 and self._old_keys[i] == 0:
